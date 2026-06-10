@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // ── Added for Google Cloud Run Deployment ────────────────────────────────
+  output: 'standalone',
+
   // ── Security Headers ─────────────────────────────────────────────────────
   async headers() {
     return [
