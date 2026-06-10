@@ -18,7 +18,7 @@ By leveraging **Google Gemini Vision AI**, users can snap a photo of grocery rec
 
 ## 🛠 Tech Stack
 - **Frontend**: Next.js 15 (App Router) + TypeScript + Tailwind CSS + Framer Motion
-- **Backend & Database**: Supabase (PostgreSQL, Auth, Realtime, RLS)
+- **Backend & Database**: Firebase Authentication, Google Cloud Firestore
 - **AI**: Google Gemini API (Vision + Text models)
 - **Charts**: Recharts
 - **Deployment**: Google Cloud Run
@@ -28,9 +28,19 @@ By leveraging **Google Gemini Vision AI**, users can snap a photo of grocery rec
 
 ---
 
+## 🏗️ Project Architecture
+The platform is built entirely within the Google Cloud ecosystem, ensuring massive scalability and low latency:
+- **Frontend**: Next.js 15 application hosted seamlessly on **Google Cloud Run**.
+- **Edge Routing**: Client requests and UI rendering are handled at the edge for instant load times.
+- **Authentication**: User identities are managed securely via **Firebase Authentication**.
+- **Live Data**: Dynamic application state, Karma scores, and the community ripple feed are stored and synced live via **Google Cloud Firestore**.
+- **AI Processing Pipeline**: Receipts and images are passed through **Google Cloud Storage** and then securely processed via the **Google Gemini Live Vision API** to extract actionable carbon data.
+
+---
+
 ## 🚀 100% Benchmark Optimization
 - **Code Quality**: Strict TypeScript, clean architecture, zero build warnings.
-- **Security**: Supabase RLS, CSP headers, rate limiting on Gemini routes, Zod validation.
+- **Security**: Firebase Security Rules, Google Cloud IAM, CSP headers, rate limiting on Gemini routes, Zod validation.
 - **Efficiency**: Dynamic imports, Edge runtime for AI, optimized Lighthouse score.
 - **Accessibility**: WCAG 2.2 AAA (keyboard navigation, aria-live, high-contrast mode).
 - **Testing**: Full unit tests for carbon calculations.
@@ -44,11 +54,15 @@ By leveraging **Google Gemini Vision AI**, users can snap a photo of grocery rec
    cd Carbon-Karma
    ```
 2. `npm install`
-3. Create a Supabase project and run `supabase_schema.sql` in SQL Editor.
+3. Create a Firebase project in the Firebase Console and configure Cloud Firestore and Authentication.
 4. Copy `.env.local.example` → `.env.local` and add your keys:
    ```env
-   NEXT_PUBLIC_SUPABASE_URL=...
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+   NEXT_PUBLIC_FIREBASE_API_KEY=...
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+   NEXT_PUBLIC_FIREBASE_APP_ID=...
    GEMINI_API_KEY=...
    ```
 5. `npm run dev`
@@ -61,7 +75,7 @@ By leveraging **Google Gemini Vision AI**, users can snap a photo of grocery rec
 1. Push code to GitHub.
 2. Go to [Google Cloud Console](https://console.cloud.google.com/) → Enable Cloud Run.
 3. Build and deploy using [Cloud Build](https://cloud.google.com/build) or `gcloud run deploy`.
-4. Add environment variables (Supabase + Gemini keys).
+4. Add environment variables (Firebase + Gemini keys).
 
 ---
 
@@ -80,6 +94,7 @@ By leveraging **Google Gemini Vision AI**, users can snap a photo of grocery rec
 ---
 
 ## 👨‍💻 Author
+
 **Mehru**
 - **GitHub**: [@CodeWithMehru](https://github.com/CodeWithMehru)
 - **Project**: Carbon Karma - A hackathon winning sustainability platform.
