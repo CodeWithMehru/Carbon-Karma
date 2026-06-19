@@ -18,7 +18,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { toast } from '@/stores/toast-store';
 import { completeOnboarding } from './actions';
 import { type TransportMode } from '@/lib/carbon/types';
@@ -28,7 +35,11 @@ const STEPS = [
   { id: 'household', title: 'Home & Energy', description: 'Household size and electricity usage' },
   { id: 'transport', title: 'Transport', description: 'Your daily commute and travel patterns' },
   { id: 'food', title: 'Food & Diet', description: 'Diet type and eating habits' },
-  { id: 'travel_shopping', title: 'Flights & Shopping', description: 'Air travel and consumption frequency' },
+  {
+    id: 'travel_shopping',
+    title: 'Flights & Shopping',
+    description: 'Air travel and consumption frequency',
+  },
 ];
 
 export default function OnboardingPage() {
@@ -43,14 +54,18 @@ export default function OnboardingPage() {
   // Quiz fields
   const [householdSize, setHouseholdSize] = useState(4);
   const [electricityBillMonthly, setElectricityBillMonthly] = useState(2000);
-  const [cookingFuel, setCookingFuel] = useState<'lpg' | 'png' | 'induction' | 'firewood' | 'mixed'>('lpg');
+  const [cookingFuel, setCookingFuel] = useState<
+    'lpg' | 'png' | 'induction' | 'firewood' | 'mixed'
+  >('lpg');
   const [primaryTransport, setPrimaryTransport] = useState<TransportMode>('two_wheeler');
   const [dailyCommuteKm, setDailyCommuteKm] = useState(10);
   const [dietType, setDietType] = useState<'veg' | 'non_veg' | 'vegan' | 'mixed'>('veg');
   const [mealsPerDay, setMealsPerDay] = useState(3);
   const [flightsPerYear, setFlightsPerYear] = useState(0);
   const [avgFlightHours, setAvgFlightHours] = useState(0);
-  const [shoppingFrequency, setShoppingFrequency] = useState<'minimal' | 'moderate' | 'frequent'>('moderate');
+  const [shoppingFrequency, setShoppingFrequency] = useState<'minimal' | 'moderate' | 'frequent'>(
+    'moderate'
+  );
 
   const handleNext = () => {
     // Basic validation before moving forward
@@ -58,7 +73,8 @@ export default function OnboardingPage() {
       if (!city.trim() || !state.trim()) {
         toast({
           title: 'Location Required',
-          description: 'Please enter your city and state to localize emissions and community metrics.',
+          description:
+            'Please enter your city and state to localize emissions and community metrics.',
           type: 'info',
         });
         return;
@@ -112,10 +128,16 @@ export default function OnboardingPage() {
   };
 
   return (
-    <main id="main-content" className="flex-1 flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#f0fdf4] to-[#fafdf7] py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <main
+      id="main-content"
+      className="flex-1 flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#f0fdf4] to-[#fafdf7] py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+    >
       {/* Dynamic background items */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-100 rounded-full blur-3xl opacity-30 animate-pulse-glow" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-100 rounded-full blur-3xl opacity-30 animate-pulse-glow" style={{ animationDuration: '4s' }} />
+      <div
+        className="absolute bottom-0 left-0 w-80 h-80 bg-amber-100 rounded-full blur-3xl opacity-30 animate-pulse-glow"
+        style={{ animationDuration: '4s' }}
+      />
 
       <div className="w-full max-w-xl z-10 flex flex-col space-y-6">
         {/* Stepper progress indicator */}
@@ -131,13 +153,13 @@ export default function OnboardingPage() {
                       isActive
                         ? 'border-emerald-600 bg-emerald-600 text-white ring-4 ring-emerald-100'
                         : isCompleted
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-600'
-                        : 'border-border bg-white text-[#4a6a4a]'
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-600'
+                          : 'border-border bg-white text-[#4a6a4a]'
                     }`}
                   >
                     {isCompleted ? '✓' : idx + 1}
                   </div>
-                  <span className="hidden md:block text-[10px] mt-1 text-[#4a6a4a] text-center font-medium max-w-[90px] absolute top-8">
+                  <span className="hidden md:block text-xs mt-1 text-[#4a6a4a] text-center font-medium max-w-[90px] absolute top-8">
                     {step.title}
                   </span>
                   {idx < STEPS.length - 1 && (
@@ -155,7 +177,8 @@ export default function OnboardingPage() {
 
         {/* Live announcer for screen readers */}
         <div className="sr-only" aria-live="polite">
-          Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep]?.title}. {STEPS[currentStep]?.description}
+          Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep]?.title}.{' '}
+          {STEPS[currentStep]?.description}
         </div>
 
         <Card className="border border-border/50 shadow-xl glass backdrop-blur-md mt-6">
@@ -183,7 +206,8 @@ export default function OnboardingPage() {
                 {currentStep === 0 && (
                   <div className="space-y-4">
                     <p className="text-sm text-[#4a6a4a] leading-relaxed">
-                      We localize carbon calculations and track community accomplishments by location. Please enter your Indian location.
+                      We localize carbon calculations and track community accomplishments by
+                      location. Please enter your Indian location.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -218,9 +242,7 @@ export default function OnboardingPage() {
                 {currentStep === 1 && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="householdSize">
-                        How many people live in your home?
-                      </Label>
+                      <Label htmlFor="householdSize">How many people live in your home?</Label>
                       <div className="relative">
                         <Building className="absolute left-3 top-3 h-4 w-4 text-[#4a6a4a]" />
                         <Input
@@ -229,11 +251,15 @@ export default function OnboardingPage() {
                           min="1"
                           max="20"
                           value={householdSize}
-                          onChange={(e) => setHouseholdSize(Math.max(1, parseInt(e.target.value) || 1))}
+                          onChange={(e) =>
+                            setHouseholdSize(Math.max(1, parseInt(e.target.value) || 1))
+                          }
                           className="pl-9"
                         />
                       </div>
-                      <p className="text-xs text-[#4a6a4a]">Energy share drops with larger families.</p>
+                      <p className="text-xs text-[#4a6a4a]">
+                        Energy share drops with larger families.
+                      </p>
                     </div>
 
                     <div className="space-y-2">
@@ -247,7 +273,9 @@ export default function OnboardingPage() {
                           type="number"
                           min="0"
                           value={electricityBillMonthly}
-                          onChange={(e) => setElectricityBillMonthly(Math.max(0, parseInt(e.target.value) || 0))}
+                          onChange={(e) =>
+                            setElectricityBillMonthly(Math.max(0, parseInt(e.target.value) || 0))
+                          }
                           className="pl-9"
                         />
                       </div>
@@ -258,7 +286,7 @@ export default function OnboardingPage() {
                       <select
                         id="cookingFuel"
                         value={cookingFuel}
-                        onChange={(e) => setCookingFuel(e.target.value as any)}
+                        onChange={(e) => setCookingFuel(e.target.value as typeof cookingFuel)}
                         className="flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                       >
                         <option value="lpg">LPG Cylinder</option>
@@ -306,7 +334,9 @@ export default function OnboardingPage() {
                         min="0"
                         max="500"
                         value={dailyCommuteKm}
-                        onChange={(e) => setDailyCommuteKm(Math.max(0, parseInt(e.target.value) || 0))}
+                        onChange={(e) =>
+                          setDailyCommuteKm(Math.max(0, parseInt(e.target.value) || 0))
+                        }
                       />
                     </div>
                   </div>
@@ -322,7 +352,7 @@ export default function OnboardingPage() {
                         <select
                           id="dietType"
                           value={dietType}
-                          onChange={(e) => setDietType(e.target.value as any)}
+                          onChange={(e) => setDietType(e.target.value as typeof dietType)}
                           className="flex h-10 w-full rounded-md border border-border bg-white pl-9 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                         >
                           <option value="veg">Vegetarian (Includes Dairy)</option>
@@ -363,7 +393,9 @@ export default function OnboardingPage() {
                             type="number"
                             min="0"
                             value={flightsPerYear}
-                            onChange={(e) => setFlightsPerYear(Math.max(0, parseInt(e.target.value) || 0))}
+                            onChange={(e) =>
+                              setFlightsPerYear(Math.max(0, parseInt(e.target.value) || 0))
+                            }
                             className="pl-9"
                           />
                         </div>
@@ -375,22 +407,32 @@ export default function OnboardingPage() {
                           type="number"
                           min="0"
                           value={avgFlightHours}
-                          onChange={(e) => setAvgFlightHours(Math.max(0, parseFloat(e.target.value) || 0))}
+                          onChange={(e) =>
+                            setAvgFlightHours(Math.max(0, parseFloat(e.target.value) || 0))
+                          }
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="shopping">How often do you purchase new clothing or gadgets?</Label>
+                      <Label htmlFor="shopping">
+                        How often do you purchase new clothing or gadgets?
+                      </Label>
                       <select
                         id="shopping"
                         value={shoppingFrequency}
-                        onChange={(e) => setShoppingFrequency(e.target.value as any)}
+                        onChange={(e) =>
+                          setShoppingFrequency(e.target.value as typeof shoppingFrequency)
+                        }
                         className="flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                       >
-                        <option value="minimal">Minimal (Rarely buy new items, repair first)</option>
+                        <option value="minimal">
+                          Minimal (Rarely buy new items, repair first)
+                        </option>
                         <option value="moderate">Moderate (Regular purchases as needed)</option>
-                        <option value="frequent">Frequent (Shop regularly for latest models/fashions)</option>
+                        <option value="frequent">
+                          Frequent (Shop regularly for latest models/fashions)
+                        </option>
                       </select>
                     </div>
                   </div>

@@ -1,13 +1,14 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { Users, Sprout, ShieldAlert, Heart, MessageSquare } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users, Sprout, Heart, MessageSquare } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { DashboardNavbar } from '@/components/dashboard/navbar';
+import { logger } from '@/lib/logger';
 
-// Types for joined profiles
-interface RippleEvent {
+// Shape of a ripple event joined with its (anonymized) author profile.
+interface RippleEventRow {
   id: string;
-  city: string;
+  city: string | null;
   category: string;
   kg_co2_saved: number;
   action_description: string;
@@ -20,16 +21,19 @@ interface RippleEvent {
 
 export default async function FeedPage() {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await (supabase as any).auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/login');
   }
 
   // Fetch recent community actions from profiles + ripple_events
-  const { data: dbEvents, error } = await (supabase as any)
+  const { data: dbEvents, error } = await supabase
     .from('ripple_events')
-    .select(`
+    .select(
+      `
       id,
       city,
       category,
@@ -40,15 +44,17 @@ export default async function FeedPage() {
       profiles (
         display_name
       )
-    `)
+    `
+    )
     .order('created_at', { ascending: false })
-    .limit(10);
+    .limit(10)
+    .returns<RippleEventRow[]>();
 
   if (error) {
-    console.error('Error fetching ripple events:', error.message);
+    logger.error('Error fetching ripple events', error.message);
   }
 
-  // Static rich mock events to populate the feed alongside database entries
+  // Static rich seed events to populate the feed alongside database entries.
   const mockEvents = [
     {
       id: 'm1',
@@ -57,7 +63,6 @@ export default async function FeedPage() {
       action_description: 'switched to PNG (Piped Natural Gas) for cooking',
       kg_co2_saved: 12.5,
       emoji: '🔥',
-      created_at: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45m ago
     },
     {
       id: 'm2',
@@ -66,7 +71,6 @@ export default async function FeedPage() {
       action_description: 'commuted to work via Metro Train instead of car',
       kg_co2_saved: 7.2,
       emoji: '🚇',
-      created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(), // 2 hrs ago
     },
     {
       id: 'm3',
@@ -75,7 +79,6 @@ export default async function FeedPage() {
       action_description: 'set up a home composting unit for kitchen waste',
       kg_co2_saved: 3.4,
       emoji: '🍂',
-      created_at: new Date(Date.now() - 1000 * 60 * 240).toISOString(), // 4 hrs ago
     },
     {
       id: 'm4',
@@ -84,7 +87,6 @@ export default async function FeedPage() {
       action_description: 'avoided single-use plastics during weekend shopping',
       kg_co2_saved: 1.8,
       emoji: '🛍️',
-      created_at: new Date(Date.now() - 1000 * 60 * 480).toISOString(), // 8 hrs ago
     },
     {
       id: 'm5',
@@ -93,24 +95,20 @@ export default async function FeedPage() {
       action_description: 'installed five LED bulbs to replace incandescent ones',
       kg_co2_saved: 5.6,
       emoji: '💡',
-      created_at: new Date(Date.now() - 1000 * 60 * 720).toISOString(), // 12 hrs ago
-    }
+    },
   ];
 
-  // Merge & sort all events
-  const parsedDbEvents = (dbEvents || []).map((e: any) => ({
+  // Real DB events arrive newest-first from the query; show them ahead of the seed examples.
+  const parsedDbEvents = (dbEvents || []).map((e) => ({
     id: e.id,
     display_name: e.profiles?.display_name || 'Anonymous Maker',
     city: e.city || 'India',
     action_description: e.action_description,
     kg_co2_saved: Number(e.kg_co2_saved),
     emoji: e.emoji || '🌱',
-    created_at: e.created_at,
   }));
 
-  const combinedEvents = [...parsedDbEvents, ...mockEvents].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
+  const combinedEvents = [...parsedDbEvents, ...mockEvents];
 
   return (
     <div className="min-h-screen bg-[#fafdf7] flex flex-col">
@@ -123,20 +121,24 @@ export default async function FeedPage() {
           <div>
             <h1 className="text-3xl font-bold font-heading text-emerald-950">Karma Ripple Feed</h1>
             <p className="text-[#4a6a4a] mt-1">
-              Real-time collective climate actions spreading positive environmental waves across India.
+              Real-time collective climate actions spreading positive environmental waves across
+              India.
             </p>
           </div>
         </div>
 
         <div className="space-y-6">
           {combinedEvents.map((event) => (
-            <Card key={event.id} className="glass border-emerald-100/50 shadow-sm bg-white/80 hover:shadow-md transition-all">
+            <Card
+              key={event.id}
+              className="glass border-emerald-100/50 shadow-sm bg-white/80 hover:shadow-md transition-all"
+            >
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <span className="text-3xl select-none" role="img" aria-hidden="true">
                     {event.emoji}
                   </span>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-baseline gap-x-2">
                       <span className="font-semibold text-emerald-950 text-base">
@@ -146,10 +148,8 @@ export default async function FeedPage() {
                         {event.city}
                       </span>
                     </div>
-                    
-                    <p className="text-sm text-gray-700 mt-1">
-                      {event.action_description}
-                    </p>
+
+                    <p className="text-sm text-gray-700 mt-1">{event.action_description}</p>
 
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-emerald-100/30">
                       <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700">

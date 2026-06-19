@@ -9,8 +9,6 @@ import {
   TRANSPORT_FACTORS,
   FOOD_FACTORS,
   COOKING_FUEL_FACTORS,
-  WASTE_FACTORS,
-  WATER_FACTORS,
   BENCHMARKS,
 } from './emission-factors';
 import type {
@@ -138,17 +136,19 @@ export function calculateBaseline(answers: BaselineAnswers): CarbonResult {
 
   // Flights: annual flights spread monthly
   const avgFlightKm = answers.avgFlightHours * 800; // ~800 km/hr cruising
-  const monthlyFlightKg = (answers.flightsPerYear * avgFlightKm * TRANSPORT_FACTORS.domestic_flight) / 12;
+  const monthlyFlightKg =
+    (answers.flightsPerYear * avgFlightKm * TRANSPORT_FACTORS.domestic_flight) / 12;
   breakdown.flights = roundTo(monthlyFlightKg, 2);
 
   // Food
-  const mealFactor = answers.dietType === 'veg'
-    ? FOOD_FACTORS.veg_meal
-    : answers.dietType === 'vegan'
-      ? FOOD_FACTORS.vegan_meal
-      : answers.dietType === 'non_veg'
-        ? FOOD_FACTORS.non_veg_meal
-        : (FOOD_FACTORS.veg_meal + FOOD_FACTORS.non_veg_meal) / 2; // mixed
+  const mealFactor =
+    answers.dietType === 'veg'
+      ? FOOD_FACTORS.veg_meal
+      : answers.dietType === 'vegan'
+        ? FOOD_FACTORS.vegan_meal
+        : answers.dietType === 'non_veg'
+          ? FOOD_FACTORS.non_veg_meal
+          : (FOOD_FACTORS.veg_meal + FOOD_FACTORS.non_veg_meal) / 2; // mixed
   breakdown.food = roundTo(answers.mealsPerDay * mealFactor * 30, 2);
 
   // Shopping

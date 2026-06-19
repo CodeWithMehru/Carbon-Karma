@@ -29,7 +29,7 @@ export const KARMA_LEVELS = [
  * Get the karma level info for a given point total.
  */
 export function getKarmaLevelInfo(points: number) {
-  let currentLevel: typeof KARMA_LEVELS[number] = KARMA_LEVELS[0];
+  let currentLevel: (typeof KARMA_LEVELS)[number] = KARMA_LEVELS[0];
 
   for (const level of KARMA_LEVELS) {
     if (points >= level.minPoints) {
@@ -41,9 +41,7 @@ export function getKarmaLevelInfo(points: number) {
 
   // Find next level
   const currentIndex = KARMA_LEVELS.indexOf(currentLevel);
-  const nextLevel = currentIndex < KARMA_LEVELS.length - 1
-    ? KARMA_LEVELS[currentIndex + 1]
-    : null;
+  const nextLevel = currentIndex < KARMA_LEVELS.length - 1 ? KARMA_LEVELS[currentIndex + 1] : null;
 
   // Progress to next level (0-100%)
   const progress = nextLevel

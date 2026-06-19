@@ -1,6 +1,10 @@
 /**
  * Supabase Database type definitions.
- * Generated from the schema — provides type safety for all Supabase queries.
+ *
+ * Mirrors `supabase/schema.sql` and conforms to the `GenericSchema` shape that
+ * `@supabase/supabase-js` expects (each table/view carries a `Relationships`
+ * tuple and the schema exposes `CompositeTypes`). Keeping this shape exact is
+ * what lets every query be fully typed — no `as any` casts required.
  */
 
 export interface Database {
@@ -48,6 +52,7 @@ export interface Database {
           notification_preferences?: Record<string, boolean>;
         };
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;
+        Relationships: [];
       };
       carbon_logs: {
         Row: {
@@ -84,6 +89,7 @@ export interface Database {
           logged_at?: string;
         };
         Update: Partial<Database['public']['Tables']['carbon_logs']['Insert']>;
+        Relationships: [];
       };
       actions: {
         Row: {
@@ -114,6 +120,7 @@ export interface Database {
           times_logged?: number;
         };
         Update: Partial<Database['public']['Tables']['actions']['Insert']>;
+        Relationships: [];
       };
       karma_transactions: {
         Row: {
@@ -136,6 +143,7 @@ export interface Database {
           action_id?: string | null;
         };
         Update: Partial<Database['public']['Tables']['karma_transactions']['Insert']>;
+        Relationships: [];
       };
       ripple_events: {
         Row: {
@@ -158,6 +166,7 @@ export interface Database {
           emoji?: string;
         };
         Update: Partial<Database['public']['Tables']['ripple_events']['Insert']>;
+        Relationships: [];
       };
       chat_messages: {
         Row: {
@@ -176,6 +185,7 @@ export interface Database {
           tokens_used?: number | null;
         };
         Update: Partial<Database['public']['Tables']['chat_messages']['Insert']>;
+        Relationships: [];
       };
     };
     Views: {
@@ -188,6 +198,7 @@ export interface Database {
           total_saved: number;
           log_count: number;
         };
+        Relationships: [];
       };
       user_weekly_carbon: {
         Row: {
@@ -197,6 +208,7 @@ export interface Database {
           total_saved: number;
           log_count: number;
         };
+        Relationships: [];
       };
       city_karma_summary: {
         Row: {
@@ -206,16 +218,38 @@ export interface Database {
           total_karma: number;
           total_kg_saved: number;
         };
+        Relationships: [];
       };
     };
     Functions: Record<string, never>;
     Enums: {
-      carbon_category: 'electricity' | 'transport' | 'food' | 'cooking_fuel' | 'waste' | 'shopping' | 'water' | 'other';
-      transport_mode: 'petrol_car' | 'diesel_car' | 'electric_car' | 'cng_auto' | 'two_wheeler' | 'bus' | 'metro' | 'train' | 'domestic_flight' | 'international_flight' | 'bicycle' | 'walking';
+      carbon_category:
+        | 'electricity'
+        | 'transport'
+        | 'food'
+        | 'cooking_fuel'
+        | 'waste'
+        | 'shopping'
+        | 'water'
+        | 'other';
+      transport_mode:
+        | 'petrol_car'
+        | 'diesel_car'
+        | 'electric_car'
+        | 'cng_auto'
+        | 'two_wheeler'
+        | 'bus'
+        | 'metro'
+        | 'train'
+        | 'domestic_flight'
+        | 'international_flight'
+        | 'bicycle'
+        | 'walking';
       food_type: 'veg_meal' | 'non_veg_meal' | 'vegan_meal' | 'dairy_product' | 'packaged_food';
       karma_action_type: 'earned' | 'bonus' | 'streak' | 'community' | 'redeemed';
       log_source: 'manual' | 'ai_receipt' | 'ai_photo' | 'action_library' | 'baseline_quiz';
       difficulty_level: 'easy' | 'medium' | 'hard';
     };
+    CompositeTypes: Record<string, never>;
   };
 }

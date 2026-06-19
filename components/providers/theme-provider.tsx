@@ -19,7 +19,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   useEffect(() => {
     const root = window.document.documentElement;
-    
+
     // Apply high contrast mode
     if (highContrastMode) {
       root.classList.add('high-contrast');

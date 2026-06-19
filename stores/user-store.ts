@@ -52,14 +52,11 @@ export const useUserStore = create<UserState>()(
 
       setLoaded: (isLoaded) => set({ isLoaded }),
 
-      toggleHighContrast: () =>
-        set((state) => ({ highContrastMode: !state.highContrastMode })),
+      toggleHighContrast: () => set((state) => ({ highContrastMode: !state.highContrastMode })),
 
-      toggleDyslexiaFont: () =>
-        set((state) => ({ dyslexiaFont: !state.dyslexiaFont })),
+      toggleDyslexiaFont: () => set((state) => ({ dyslexiaFont: !state.dyslexiaFont })),
 
-      toggleSidebar: () =>
-        set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
       reset: () => set(initialState),
     }),

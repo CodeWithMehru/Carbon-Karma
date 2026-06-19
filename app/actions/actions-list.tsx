@@ -25,9 +25,16 @@ import {
   Search,
   Sparkles,
   HelpCircle,
-  CheckCircle2
+  CheckCircle2,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { logEcoAction } from './actions';
@@ -38,7 +45,7 @@ interface EcoAction {
   title: string;
   description: string;
   category: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: string;
   kg_co2_saved: number;
   karma_reward: number;
   icon_name: string;
@@ -49,27 +56,46 @@ interface EcoAction {
 // Icon mapper helper
 const getIcon = (name: string) => {
   switch (name) {
-    case 'bike': return Bike;
+    case 'bike':
+      return Bike;
     case 'train-front':
-    case 'train': return Train;
-    case 'users': return Users;
-    case 'footprints': return Footprints;
-    case 'home': return Home;
+    case 'train':
+      return Train;
+    case 'users':
+      return Users;
+    case 'footprints':
+      return Footprints;
+    case 'home':
+      return Home;
     case 'salad':
-    case 'utensils-crossed': return Utensils;
-    case 'apple': return Apple;
-    case 'cooking-pot': return CookingPot;
-    case 'lightbulb': return Lightbulb;
-    case 'thermometer': return Thermometer;
-    case 'plug': return Plug;
-    case 'wind': return Wind;
-    case 'sun': return Sun;
-    case 'recycle': return Recycle;
-    case 'sprout': return Sprout;
-    case 'droplets': return Droplets;
-    case 'shopping-bag': return ShoppingBag;
-    case 'wrench': return Wrench;
-    default: return Leaf;
+    case 'utensils-crossed':
+      return Utensils;
+    case 'apple':
+      return Apple;
+    case 'cooking-pot':
+      return CookingPot;
+    case 'lightbulb':
+      return Lightbulb;
+    case 'thermometer':
+      return Thermometer;
+    case 'plug':
+      return Plug;
+    case 'wind':
+      return Wind;
+    case 'sun':
+      return Sun;
+    case 'recycle':
+      return Recycle;
+    case 'sprout':
+      return Sprout;
+    case 'droplets':
+      return Droplets;
+    case 'shopping-bag':
+      return ShoppingBag;
+    case 'wrench':
+      return Wrench;
+    default:
+      return Leaf;
   }
 };
 
@@ -80,7 +106,7 @@ const CATEGORIES = [
   { value: 'electricity', label: 'Energy' },
   { value: 'waste', label: 'Waste' },
   { value: 'water', label: 'Water' },
-  { value: 'shopping', label: 'Shopping' }
+  { value: 'shopping', label: 'Shopping' },
 ];
 
 export function ActionsList({ initialActions }: { initialActions: EcoAction[] }) {
@@ -93,8 +119,9 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
 
   // Filter actions
   const filteredActions = actions.filter((action) => {
-    const matchesSearch = action.title.toLowerCase().includes(search.toLowerCase()) ||
-                          action.description.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch =
+      action.title.toLowerCase().includes(search.toLowerCase()) ||
+      action.description.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || action.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -104,7 +131,7 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
     startTransition(async () => {
       const result = await logEcoAction(actionId);
       setLoggingId(null);
-      if (result.error) {
+      if (!result.success) {
         toast({
           title: 'Action Log Failed',
           description: result.error,
@@ -116,7 +143,7 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
           description: `Logged "${result.title}" and earned +${result.points} Karma!`,
           type: 'success',
         });
-        
+
         // Optimistically update times_logged locally
         setActions((prev) =>
           prev.map((act) =>
@@ -141,7 +168,7 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
             className="pl-9 h-11 border-emerald-100 focus-visible:ring-emerald-500 bg-white"
           />
         </div>
-        
+
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {CATEGORIES.map((cat) => (
             <Button
@@ -165,7 +192,9 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
         <Card className="text-center py-12 border-emerald-100 bg-white">
           <CardContent className="space-y-3">
             <HelpCircle className="h-12 w-12 text-emerald-600/30 mx-auto" />
-            <h3 className="font-heading text-lg font-semibold text-emerald-950">No actions found</h3>
+            <h3 className="font-heading text-lg font-semibold text-emerald-950">
+              No actions found
+            </h3>
             <p className="text-[#4a6a4a] text-sm max-w-sm mx-auto">
               Try adjusting your search query or switching categories.
             </p>
@@ -177,55 +206,66 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
             const Icon = getIcon(action.icon_name);
             const isLogging = loggingId === action.id;
             return (
-              <Card key={action.id} className="glass border-emerald-100/50 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow bg-white/70">
+              <Card
+                key={action.id}
+                className="glass border-emerald-100/50 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow bg-white/70"
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <div 
+                    <div
                       className="h-10 w-10 rounded-lg flex items-center justify-center text-white"
                       style={{ backgroundColor: action.color || '#10b981' }}
                     >
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex gap-2">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                        action.difficulty === 'easy' ? 'bg-green-50 text-green-700 border border-green-100' :
-                        action.difficulty === 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
-                        'bg-rose-50 text-rose-700 border border-rose-100'
-                      }`}>
+                      <span
+                        className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                          action.difficulty === 'easy'
+                            ? 'bg-green-50 text-green-700 border border-green-100'
+                            : action.difficulty === 'medium'
+                              ? 'bg-amber-50 text-amber-700 border border-amber-100'
+                              : 'bg-rose-50 text-rose-700 border border-rose-100'
+                        }`}
+                      >
                         {action.difficulty}
                       </span>
                       {action.times_logged > 0 && (
-                        <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-100">
+                        <span className="text-xs font-semibold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-100">
                           <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                           Logged {action.times_logged}x
                         </span>
                       )}
                     </div>
                   </div>
-                  <CardTitle className="text-lg font-heading text-emerald-950 font-semibold">{action.title}</CardTitle>
+                  <CardTitle className="text-lg font-heading text-emerald-950 font-semibold">
+                    {action.title}
+                  </CardTitle>
                   <CardDescription className="text-xs text-[#4a6a4a] min-h-[36px] line-clamp-2">
                     {action.description}
                   </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent className="pb-4 pt-0">
                   <div className="grid grid-cols-2 gap-4 border-y border-emerald-100/50 py-3 text-center bg-emerald-50/20 rounded-lg">
                     <div>
-                      <p className="text-[10px] font-semibold text-[#4a6a4a] uppercase">CO₂ Saved</p>
-                      <p className="text-sm font-bold text-emerald-800">{action.kg_co2_saved.toFixed(2)} kg</p>
+                      <p className="text-xs font-semibold text-[#4a6a4a] uppercase">CO₂ Saved</p>
+                      <p className="text-sm font-bold text-emerald-800">
+                        {action.kg_co2_saved.toFixed(2)} kg
+                      </p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold text-[#4a6a4a] uppercase">Karma Points</p>
+                      <p className="text-xs font-semibold text-[#4a6a4a] uppercase">Karma Points</p>
                       <p className="text-sm font-bold text-amber-600 flex items-center justify-center gap-1">
-                        <Sparkles className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
-                        +{action.karma_reward}
+                        <Sparkles className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />+
+                        {action.karma_reward}
                       </p>
                     </div>
                   </div>
                 </CardContent>
 
                 <CardFooter className="pt-0">
-                  <Button 
+                  <Button
                     onClick={() => handleLogAction(action.id)}
                     disabled={isLogging || isPending}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm"
@@ -235,7 +275,9 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         Logging...
                       </span>
-                    ) : 'Log Action'}
+                    ) : (
+                      'Log Action'
+                    )}
                   </Button>
                 </CardFooter>
               </Card>

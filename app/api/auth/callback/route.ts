@@ -4,12 +4,11 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/onboarding';
 
   if (code) {
     const supabase = await createServerSupabaseClient();
     const { error, data } = await supabase.auth.exchangeCodeForSession(code);
-    
+
     if (!error && data.user) {
       // Check if user already has baseline quiz completed
       const { data: profile } = await supabase
@@ -19,11 +18,11 @@ export async function GET(request: Request) {
         .single();
 
       // If user has already completed the baseline, go straight to dashboard
-      const redirectTo = (profile as { baseline_completed: boolean } | null)?.baseline_completed ? '/dashboard' : '/onboarding';
-      
+      const redirectTo = profile?.baseline_completed ? '/dashboard' : '/onboarding';
+
       const forwardedHost = request.headers.get('x-forwarded-host');
       const isLocalEnv = process.env.NODE_ENV === 'development';
-      
+
       if (isLocalEnv) {
         return NextResponse.redirect(`${origin}${redirectTo}`);
       } else if (forwardedHost) {

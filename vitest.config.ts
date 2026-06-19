@@ -7,10 +7,19 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'node',
-    include: ['tests/unit/**/*.test.ts'],
+    include: ['tests/unit/**/*.test.ts', 'tests/integration/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['lib/carbon/**'],
+      // Scope coverage to the pure domain logic that unit tests target. The
+      // Supabase client factories and the Gemini SDK network path are covered
+      // by the integration tests and Playwright E2E suite instead.
+      include: [
+        'lib/carbon/**',
+        'lib/karma/**',
+        'lib/streak/**',
+        'lib/insights/**',
+        'lib/validators/**',
+      ],
     },
   },
   resolve: {

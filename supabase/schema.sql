@@ -315,23 +315,11 @@ CREATE TRIGGER on_carbon_log_created
   FOR EACH ROW
   EXECUTE FUNCTION increment_action_counter();
 
--- Auto-update karma points on profile when a transaction is created
-CREATE OR REPLACE FUNCTION update_profile_karma()
-RETURNS TRIGGER AS $$
-BEGIN
-  UPDATE profiles
-  SET 
-    karma_points = karma_points + NEW.points,
-    karma_level = GREATEST(1, FLOOR((karma_points + NEW.points) / 100) + 1)
-  WHERE id = NEW.user_id;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER on_karma_transaction_created
-  AFTER INSERT ON karma_transactions
-  FOR EACH ROW
-  EXECUTE FUNCTION update_profile_karma();
+-- NOTE: Karma points and levels are maintained explicitly by the application
+-- layer (server actions) as the single source of truth, so that the logic is
+-- visible and unit-testable. We intentionally do NOT add a trigger to increment
+-- karma when a karma_transactions row is inserted — doing both would double-count.
+-- The karma_transactions table serves as an append-only ledger / audit log.
 
 -- =============================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES

@@ -71,12 +71,52 @@ export const BENCHMARKS = {
 } as const;
 
 export const CATEGORY_META = {
-  electricity: { label: 'Electricity', icon: 'zap', color: '#facc15', gradient: 'from-yellow-400 to-amber-500' },
-  transport: { label: 'Transport', icon: 'car', color: '#3b82f6', gradient: 'from-blue-400 to-blue-600' },
-  food: { label: 'Food', icon: 'utensils', color: '#22c55e', gradient: 'from-green-400 to-emerald-600' },
-  cooking_fuel: { label: 'Cooking Fuel', icon: 'flame', color: '#f97316', gradient: 'from-orange-400 to-red-500' },
-  waste: { label: 'Waste', icon: 'recycle', color: '#84cc16', gradient: 'from-lime-400 to-green-500' },
-  shopping: { label: 'Shopping', icon: 'shopping-bag', color: '#d946ef', gradient: 'from-fuchsia-400 to-purple-600' },
-  water: { label: 'Water', icon: 'droplets', color: '#06b6d4', gradient: 'from-cyan-400 to-blue-500' },
-  other: { label: 'Other', icon: 'circle-dot', color: '#94a3b8', gradient: 'from-slate-400 to-slate-600' },
+  electricity: {
+    label: 'Electricity',
+    icon: 'zap',
+    color: '#facc15',
+    gradient: 'from-yellow-400 to-amber-500',
+  },
+  transport: {
+    label: 'Transport',
+    icon: 'car',
+    color: '#3b82f6',
+    gradient: 'from-blue-400 to-blue-600',
+  },
+  food: {
+    label: 'Food',
+    icon: 'utensils',
+    color: '#22c55e',
+    gradient: 'from-green-400 to-emerald-600',
+  },
+  cooking_fuel: {
+    label: 'Cooking Fuel',
+    icon: 'flame',
+    color: '#f97316',
+    gradient: 'from-orange-400 to-red-500',
+  },
+  waste: {
+    label: 'Waste',
+    icon: 'recycle',
+    color: '#84cc16',
+    gradient: 'from-lime-400 to-green-500',
+  },
+  shopping: {
+    label: 'Shopping',
+    icon: 'shopping-bag',
+    color: '#d946ef',
+    gradient: 'from-fuchsia-400 to-purple-600',
+  },
+  water: {
+    label: 'Water',
+    icon: 'droplets',
+    color: '#06b6d4',
+    gradient: 'from-cyan-400 to-blue-500',
+  },
+  other: {
+    label: 'Other',
+    icon: 'circle-dot',
+    color: '#94a3b8',
+    gradient: 'from-slate-400 to-slate-600',
+  },
 } as const;

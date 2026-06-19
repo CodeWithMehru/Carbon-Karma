@@ -1,6 +1,6 @@
 'use client';
 
-import { useToastStore, type ToastMessage } from '@/stores/toast-store';
+import { useToastStore } from '@/stores/toast-store';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, CheckCircle, Info, X } from 'lucide-react';
 
@@ -26,26 +26,28 @@ export function ToastProvider() {
               toast.type === 'success'
                 ? 'border-emerald-200/50 bg-emerald-50/90 text-emerald-950 dark:bg-emerald-950/90 dark:border-emerald-900/50'
                 : toast.type === 'error'
-                ? 'border-red-200/50 bg-red-50/90 text-red-950 dark:bg-red-950/90 dark:border-red-900/50'
-                : 'border-blue-200/50 bg-blue-50/90 text-blue-950 dark:bg-blue-950/90 dark:border-blue-900/50'
+                  ? 'border-red-200/50 bg-red-50/90 text-red-950 dark:bg-red-950/90 dark:border-red-900/50'
+                  : 'border-blue-200/50 bg-blue-50/90 text-blue-950 dark:bg-blue-950/90 dark:border-blue-900/50'
             }`}
           >
             {/* Status Icons */}
             <span className="mt-0.5 flex-shrink-0">
-              {toast.type === 'success' && <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />}
-              {toast.type === 'error' && <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />}
-              {toast.type === 'info' && <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+              {toast.type === 'success' && (
+                <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              )}
+              {toast.type === 'error' && (
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              )}
+              {toast.type === 'info' && (
+                <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              )}
             </span>
 
             {/* Content */}
             <div className="flex-1 space-y-1">
-              <h4 className="text-sm font-semibold tracking-tight leading-none">
-                {toast.title}
-              </h4>
+              <h4 className="text-sm font-semibold tracking-tight leading-none">{toast.title}</h4>
               {toast.description && (
-                <p className="text-xs opacity-90 leading-normal">
-                  {toast.description}
-                </p>
+                <p className="text-xs opacity-90 leading-normal">{toast.description}</p>
               )}
             </div>
 

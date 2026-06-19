@@ -4,6 +4,7 @@ import './globals.css';
 import { QueryProvider } from '@/components/providers/query-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { ToastProvider } from '@/components/providers/toast-provider';
+import { AccessibilityMenu } from '@/components/accessibility-menu';
 
 // Configure Google Fonts for premium aesthetics
 const inter = Inter({
@@ -20,11 +21,13 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: 'Carbon Karma — Gamifying Carbon Footprint Reduction',
-  description: 'Understand, track, and reduce your carbon footprint with AI-powered insights, gamified karma points, and community ripple effects.',
+  description:
+    'Understand, track, and reduce your carbon footprint with AI-powered insights, gamified karma points, and community ripple effects.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   openGraph: {
     title: 'Carbon Karma',
-    description: 'Gamify your journey to net-zero with localized emission factors and AI receipts/photos parsing.',
+    description:
+      'Gamify your journey to net-zero with localized emission factors and AI receipts/photos parsing.',
     type: 'website',
     locale: 'en_IN',
   },
@@ -52,10 +55,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${outfit.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${inter.variable} ${outfit.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[#fafdf7] text-[#1a2e1a] transition-colors duration-250">
         {/* Skip Link for WCAG 2.2 AAA Keyboard Accessibility */}
         <a href="#main-content" className="skip-link">
@@ -64,9 +64,10 @@ export default function RootLayout({
         <QueryProvider>
           <ThemeProvider>
             <ToastProvider />
-            <div className="flex flex-col min-h-screen">
+            <div id="main-content" role="main" className="flex flex-col min-h-screen">
               {children}
             </div>
+            <AccessibilityMenu />
           </ThemeProvider>
         </QueryProvider>
       </body>

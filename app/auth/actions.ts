@@ -1,12 +1,17 @@
 'use server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { signInSchema, signUpSchema } from '@/lib/validators/schemas';
+import {
+  signInSchema,
+  signUpSchema,
+  type SignInInput,
+  type SignUpInput,
+} from '@/lib/validators/schemas';
 import { redirect } from 'next/navigation';
 
-export async function signUp(formData: unknown) {
+export async function signUp(formData: SignUpInput) {
   const supabase = await createServerSupabaseClient();
-  
+
   // Parse & validate input
   const validation = signUpSchema.safeParse(formData);
   if (!validation.success) {
@@ -34,7 +39,7 @@ export async function signUp(formData: unknown) {
   return { success: true };
 }
 
-export async function signIn(formData: unknown) {
+export async function signIn(formData: SignInInput) {
   const supabase = await createServerSupabaseClient();
 
   // Parse & validate input
@@ -65,7 +70,7 @@ export async function signOut() {
 
 export async function signInWithGoogle() {
   const supabase = await createServerSupabaseClient();
-  
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {

@@ -1,13 +1,22 @@
 /**
- * Next.js Middleware for auth protection and rate limiting.
- * Runs on every request — refreshes auth session and protects dashboard routes.
+ * Next.js proxy (the Next.js 16 rename of middleware) for auth protection and
+ * rate limiting. Runs on every matched request — rate-limits the AI routes,
+ * refreshes the Supabase auth session, and guards the authenticated routes.
  */
 
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 /** Routes that require authentication */
-const PROTECTED_ROUTES = ['/dashboard', '/upload', '/actions', '/coach', '/feed', '/map', '/onboarding'];
+const PROTECTED_ROUTES = [
+  '/dashboard',
+  '/upload',
+  '/actions',
+  '/coach',
+  '/feed',
+  '/map',
+  '/onboarding',
+];
 
 /** Routes that should redirect to dashboard if already authenticated */
 const AUTH_ROUTES = ['/login', '/signup'];
@@ -19,10 +28,10 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 /** In-memory rate limit store (use Redis in production) */
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
-export async function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ── Rate limiting for API routes ─────────────────────────────────────────
+  // ── Rate limiting for AI routes ──────────────────────────────────────────
   if (pathname.startsWith('/api/ai/')) {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
     const now = Date.now();
@@ -30,9 +39,17 @@ export async function proxy(request: NextRequest) {
 
     if (entry && now < entry.resetAt) {
       if (entry.count >= RATE_LIMIT_MAX) {
+        const retryAfter = Math.max(1, Math.ceil((entry.resetAt - now) / 1000));
         return NextResponse.json(
           { error: 'Rate limit exceeded. Please try again later.' },
-          { status: 429 }
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(retryAfter),
+              'X-RateLimit-Limit': String(RATE_LIMIT_MAX),
+              'X-RateLimit-Remaining': '0',
+            },
+          }
         );
       }
       entry.count++;
@@ -65,7 +82,14 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // Resolve the session defensively — a Supabase/network failure must not 500
+  // the whole site; treat it as "not authenticated" and let route guards apply.
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null;
+  try {
+    user = (await supabase.auth.getUser()).data.user;
+  } catch {
+    user = null;
+  }
 
   // ── Route protection ─────────────────────────────────────────────────────
   const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /*
  * Carbon Karma — Global Design System
@@ -127,7 +127,9 @@ body {
   font-family: var(--font-sans);
   background-color: var(--color-bg);
   color: var(--color-text);
-  transition: background-color var(--transition-base), color var(--transition-base);
+  transition:
+    background-color var(--transition-base),
+    color var(--transition-base);
 }
 
 /* ─── Focus Styles (WCAG 2.2 AAA) ────────────────────────────────────────── */
@@ -169,28 +171,56 @@ body {
 /* ─── Animations ─────────────────────────────────────────────────────────── */
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px var(--color-karma-glow); }
-  50% { box-shadow: 0 0 24px var(--color-karma-glow); }
+  0%,
+  100% {
+    box-shadow: 0 0 8px var(--color-karma-glow);
+  }
+  50% {
+    box-shadow: 0 0 24px var(--color-karma-glow);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @keyframes ripple {
-  0% { transform: scale(0.8); opacity: 1; }
-  100% { transform: scale(2.4); opacity: 0; }
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
 }
 
 .animate-fade-in {
@@ -244,7 +274,9 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-base), transform var(--transition-base);
+  transition:
+    box-shadow var(--transition-base),
+    transform var(--transition-base);
 }
 
 .card:hover {
@@ -274,7 +306,9 @@ body {
 /* ─── Reduced Motion ─────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

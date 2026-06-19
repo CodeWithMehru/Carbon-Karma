@@ -4,7 +4,15 @@ import LandingUI from './landing-ui';
 
 export default async function Home() {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+
+  // Resolve the session defensively so the public landing page still renders
+  // even if Supabase is unreachable.
+  let user = null;
+  try {
+    user = (await supabase.auth.getUser()).data.user;
+  } catch {
+    user = null;
+  }
 
   // Redirect authenticated users to the dashboard
   if (user) {

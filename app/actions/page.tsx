@@ -2,24 +2,27 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { ActionsList } from './actions-list';
 import { DashboardNavbar } from '@/components/dashboard/navbar';
+import { logger } from '@/lib/logger';
 
 export default async function ActionsPage() {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await (supabase as any).auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/login');
   }
 
   // Fetch all active eco-actions
-  const { data: actions, error } = await (supabase as any)
+  const { data: actions, error } = await supabase
     .from('actions')
     .select('*')
     .eq('is_active', true)
     .order('karma_reward', { ascending: false });
 
   if (error) {
-    console.error('Error fetching actions:', error.message);
+    logger.error('Error fetching actions', error.message);
   }
 
   return (
