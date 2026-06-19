@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Footprint trend chart — a Recharts area chart comparing the user's weekly
+ * footprint against their baseline. Loaded dynamically (`ssr: false`) so the
+ * charting bundle stays out of the initial dashboard payload.
+ */
+
 import {
   Area,
   AreaChart,

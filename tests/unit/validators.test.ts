@@ -14,6 +14,8 @@ import {
   foodTypeSchema,
   chatMessageSchema,
   updateProfileSchema,
+  insightSchema,
+  insightsResultSchema,
 } from '@/lib/validators/schemas';
 
 // ─── Carbon Category Enum ────────────────────────────────────────────────────
@@ -353,5 +355,173 @@ describe('updateProfileSchema', () => {
       dyslexia_font: false,
     });
     expect(result.success).toBe(true);
+  });
+
+  it('should accept display_name at the 1 and 100 char boundaries', () => {
+    expect(updateProfileSchema.safeParse({ display_name: 'a' }).success).toBe(true);
+    expect(updateProfileSchema.safeParse({ display_name: 'x'.repeat(100) }).success).toBe(true);
+  });
+
+  it('should reject display_name longer than 100 chars', () => {
+    expect(updateProfileSchema.safeParse({ display_name: 'x'.repeat(101) }).success).toBe(false);
+  });
+});
+
+// ─── Baseline Quiz — inclusive numeric boundaries ────────────────────────────
+
+describe('baselineQuizSchema — numeric boundaries', () => {
+  const validBaseline = {
+    householdSize: 4,
+    electricityBillMonthly: 2000,
+    cookingFuel: 'lpg' as const,
+    primaryTransport: 'two_wheeler' as const,
+    dailyCommuteKm: 10,
+    dietType: 'mixed' as const,
+    mealsPerDay: 3,
+    flightsPerYear: 2,
+    avgFlightHours: 2,
+    shoppingFrequency: 'moderate' as const,
+  };
+
+  it('accepts every field at its inclusive maximum', () => {
+    const result = baselineQuizSchema.safeParse({
+      ...validBaseline,
+      householdSize: 20,
+      electricityBillMonthly: 100000,
+      dailyCommuteKm: 500,
+      mealsPerDay: 10,
+      flightsPerYear: 100,
+      avgFlightHours: 24,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts the minimum allowed flights (0) and flight hours (0)', () => {
+    const result = baselineQuizSchema.safeParse({
+      ...validBaseline,
+      flightsPerYear: 0,
+      avgFlightHours: 0,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects values just past each maximum', () => {
+    expect(baselineQuizSchema.safeParse({ ...validBaseline, mealsPerDay: 11 }).success).toBe(false);
+    expect(baselineQuizSchema.safeParse({ ...validBaseline, flightsPerYear: 101 }).success).toBe(
+      false
+    );
+    expect(baselineQuizSchema.safeParse({ ...validBaseline, avgFlightHours: 25 }).success).toBe(
+      false
+    );
+    expect(baselineQuizSchema.safeParse({ ...validBaseline, householdSize: 21 }).success).toBe(
+      false
+    );
+  });
+
+  it('rejects a non-integer meal count', () => {
+    expect(baselineQuizSchema.safeParse({ ...validBaseline, mealsPerDay: 3.5 }).success).toBe(
+      false
+    );
+  });
+});
+
+// ─── Carbon Log — boundary values ────────────────────────────────────────────
+
+describe('createCarbonLogSchema — boundaries', () => {
+  const base = { category: 'transport' as const, description: 'Commute' };
+
+  it('accepts kg_co2 at the inclusive maximum (100000)', () => {
+    expect(createCarbonLogSchema.safeParse({ ...base, kg_co2: 100000 }).success).toBe(true);
+  });
+
+  it('rejects kg_co2 above the maximum', () => {
+    expect(createCarbonLogSchema.safeParse({ ...base, kg_co2: 100000.01 }).success).toBe(false);
+  });
+
+  it('accepts description at the 1 and 500 char boundaries', () => {
+    expect(
+      createCarbonLogSchema.safeParse({ category: 'food', kg_co2: 1, description: 'x' }).success
+    ).toBe(true);
+    expect(
+      createCarbonLogSchema.safeParse({ category: 'food', kg_co2: 1, description: 'x'.repeat(500) })
+        .success
+    ).toBe(true);
+  });
+
+  it('rejects an empty or over-long description', () => {
+    expect(createCarbonLogSchema.safeParse({ ...base, kg_co2: 1, description: '' }).success).toBe(
+      false
+    );
+    expect(
+      createCarbonLogSchema.safeParse({ ...base, kg_co2: 1, description: 'x'.repeat(501) }).success
+    ).toBe(false);
+  });
+});
+
+// ─── Sign-up password & name rules (boundaries) ──────────────────────────────
+
+describe('signUpSchema — password & name boundaries', () => {
+  it('accepts a password exactly at the 8-char minimum with one uppercase and one number', () => {
+    const result = signUpSchema.safeParse({
+      email: 'user@example.com',
+      password: 'Abcdef12',
+      fullName: 'Asha Rao',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a password missing an uppercase letter or a number', () => {
+    expect(
+      signUpSchema.safeParse({ email: 'u@e.com', password: 'abcdef12', fullName: 'Asha' }).success
+    ).toBe(false);
+    expect(
+      signUpSchema.safeParse({ email: 'u@e.com', password: 'Abcdefgh', fullName: 'Asha' }).success
+    ).toBe(false);
+  });
+
+  it('accepts fullName at the 2 and 100 char boundaries, rejects 1', () => {
+    expect(
+      signUpSchema.safeParse({ email: 'u@e.com', password: 'Abcdef12', fullName: 'Jo' }).success
+    ).toBe(true);
+    expect(
+      signUpSchema.safeParse({ email: 'u@e.com', password: 'Abcdef12', fullName: 'x'.repeat(100) })
+        .success
+    ).toBe(true);
+    expect(
+      signUpSchema.safeParse({ email: 'u@e.com', password: 'Abcdef12', fullName: 'J' }).success
+    ).toBe(false);
+  });
+});
+
+// ─── Insight schemas ─────────────────────────────────────────────────────────
+
+describe('insightSchema / insightsResultSchema', () => {
+  const validInsight = {
+    icon: '🚲',
+    title: 'Switch 2 Commute Days',
+    desc: 'Cycle or take the Metro two days a week to cut commute emissions.',
+    impact: 'Save ~12 kg CO₂/mo',
+    category: 'transport',
+  };
+
+  it('accepts a well-formed insight (category optional)', () => {
+    expect(insightSchema.safeParse(validInsight).success).toBe(true);
+    const { icon, title, desc, impact } = validInsight;
+    expect(insightSchema.safeParse({ icon, title, desc, impact }).success).toBe(true);
+  });
+
+  it('rejects an empty icon or an over-long title', () => {
+    expect(insightSchema.safeParse({ ...validInsight, icon: '' }).success).toBe(false);
+    expect(insightSchema.safeParse({ ...validInsight, title: 'x'.repeat(61) }).success).toBe(false);
+  });
+
+  it('accepts result arrays from 1 up to 6 insights', () => {
+    expect(insightsResultSchema.safeParse([validInsight]).success).toBe(true);
+    expect(insightsResultSchema.safeParse(Array(6).fill(validInsight)).success).toBe(true);
+  });
+
+  it('rejects an empty array or more than 6 insights', () => {
+    expect(insightsResultSchema.safeParse([]).success).toBe(false);
+    expect(insightsResultSchema.safeParse(Array(7).fill(validInsight)).success).toBe(false);
   });
 });

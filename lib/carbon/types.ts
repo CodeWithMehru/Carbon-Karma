@@ -3,6 +3,8 @@
  * Mirrors database enums and adds client-side types.
  */
 
+import type { COOKING_FUEL_FACTORS } from './emission-factors';
+
 export type CarbonCategory =
   | 'electricity'
   | 'transport'
@@ -59,7 +61,7 @@ export interface FoodInput {
 
 /** Input for cooking fuel carbon calculation */
 export interface CookingFuelInput {
-  fuelType: keyof typeof import('./emission-factors').COOKING_FUEL_FACTORS;
+  fuelType: keyof typeof COOKING_FUEL_FACTORS;
   quantity: number;
 }
 

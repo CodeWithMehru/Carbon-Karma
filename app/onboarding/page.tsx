@@ -1,8 +1,19 @@
 'use client';
 
+/**
+ * Onboarding (baseline quiz) — the "Understand" step.
+ *
+ * A five-step wizard (location → household/energy → transport → food → flights/
+ * shopping) that collects the inputs for the carbon baseline. Local state holds
+ * the current step and every answer; `handleNext` validates the active step
+ * before advancing and submits via the `completeOnboarding` server action on the
+ * final step. Step transitions and progress are announced for screen readers and
+ * honor `prefers-reduced-motion`.
+ */
+
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   Leaf,
   ArrowRight,
@@ -44,6 +55,7 @@ const STEPS = [
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const [currentStep, setCurrentStep] = useState(0);
   const [isPending, startTransition] = useTransition();
 
@@ -109,7 +121,7 @@ export default function OnboardingPage() {
 
     startTransition(async () => {
       const result = await completeOnboarding(payload, city, state);
-      if (result?.error) {
+      if (result && !result.success) {
         toast({
           title: 'Quiz Submission Failed',
           description: result.error,
@@ -132,6 +144,9 @@ export default function OnboardingPage() {
       id="main-content"
       className="flex-1 flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#f0fdf4] to-[#fafdf7] py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
     >
+      {/* Single page-level heading for assistive tech (visual heading is the step title). */}
+      <h1 className="sr-only">Carbon Baseline Quiz</h1>
+
       {/* Dynamic background items */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-100 rounded-full blur-3xl opacity-30 animate-pulse-glow" />
       <div
@@ -154,12 +169,12 @@ export default function OnboardingPage() {
                         ? 'border-emerald-600 bg-emerald-600 text-white ring-4 ring-emerald-100'
                         : isCompleted
                           ? 'border-emerald-500 bg-emerald-50 text-emerald-600'
-                          : 'border-border bg-white text-[#4a6a4a]'
+                          : 'border-border bg-white text-[#3d5a3d]'
                     }`}
                   >
                     {isCompleted ? '✓' : idx + 1}
                   </div>
-                  <span className="hidden md:block text-xs mt-1 text-[#4a6a4a] text-center font-medium max-w-[90px] absolute top-8">
+                  <span className="hidden md:block text-xs mt-1 text-[#3d5a3d] text-center font-medium max-w-[90px] absolute top-8">
                     {step.title}
                   </span>
                   {idx < STEPS.length - 1 && (
@@ -196,16 +211,16 @@ export default function OnboardingPage() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentStep}
-                initial={{ opacity: 0, x: 20 }}
+                initial={reduceMotion ? false : { opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -20 }}
+                transition={{ duration: reduceMotion ? 0 : 0.3 }}
                 className="space-y-4"
               >
                 {/* STEP 0: Location & Profile Info */}
                 {currentStep === 0 && (
                   <div className="space-y-4">
-                    <p className="text-sm text-[#4a6a4a] leading-relaxed">
+                    <p className="text-sm text-[#3d5a3d] leading-relaxed">
                       We localize carbon calculations and track community accomplishments by
                       location. Please enter your Indian location.
                     </p>
@@ -213,7 +228,7 @@ export default function OnboardingPage() {
                       <div className="space-y-2">
                         <Label htmlFor="city">City</Label>
                         <div className="relative">
-                          <MapPin className="absolute left-3 top-3 h-4 w-4 text-[#4a6a4a]" />
+                          <MapPin className="absolute left-3 top-3 h-4 w-4 text-[#3d5a3d]" />
                           <Input
                             id="city"
                             placeholder="e.g. Mumbai"
@@ -221,6 +236,7 @@ export default function OnboardingPage() {
                             onChange={(e) => setCity(e.target.value)}
                             className="pl-9"
                             required
+                            aria-required="true"
                           />
                         </div>
                       </div>
@@ -232,6 +248,7 @@ export default function OnboardingPage() {
                           value={state}
                           onChange={(e) => setState(e.target.value)}
                           required
+                          aria-required="true"
                         />
                       </div>
                     </div>
@@ -244,7 +261,7 @@ export default function OnboardingPage() {
                     <div className="space-y-2">
                       <Label htmlFor="householdSize">How many people live in your home?</Label>
                       <div className="relative">
-                        <Building className="absolute left-3 top-3 h-4 w-4 text-[#4a6a4a]" />
+                        <Building className="absolute left-3 top-3 h-4 w-4 text-[#3d5a3d]" />
                         <Input
                           id="householdSize"
                           type="number"
@@ -257,7 +274,7 @@ export default function OnboardingPage() {
                           className="pl-9"
                         />
                       </div>
-                      <p className="text-xs text-[#4a6a4a]">
+                      <p className="text-xs text-[#3d5a3d]">
                         Energy share drops with larger families.
                       </p>
                     </div>
@@ -267,7 +284,7 @@ export default function OnboardingPage() {
                         Average monthly electricity bill (INR)?
                       </Label>
                       <div className="relative">
-                        <Zap className="absolute left-3 top-3 h-4 w-4 text-[#4a6a4a]" />
+                        <Zap className="absolute left-3 top-3 h-4 w-4 text-[#3d5a3d]" />
                         <Input
                           id="electricityBill"
                           type="number"
@@ -305,7 +322,7 @@ export default function OnboardingPage() {
                     <div className="space-y-2">
                       <Label htmlFor="primaryTransport">Primary Commute Mode</Label>
                       <div className="relative">
-                        <Car className="absolute left-3 top-3 h-4 w-4 text-[#4a6a4a] z-10" />
+                        <Car className="absolute left-3 top-3 h-4 w-4 text-[#3d5a3d] z-10" />
                         <select
                           id="primaryTransport"
                           value={primaryTransport}
@@ -348,7 +365,7 @@ export default function OnboardingPage() {
                     <div className="space-y-2">
                       <Label htmlFor="dietType">Diet Type</Label>
                       <div className="relative">
-                        <Utensils className="absolute left-3 top-3 h-4 w-4 text-[#4a6a4a] z-10" />
+                        <Utensils className="absolute left-3 top-3 h-4 w-4 text-[#3d5a3d] z-10" />
                         <select
                           id="dietType"
                           value={dietType}
@@ -361,7 +378,7 @@ export default function OnboardingPage() {
                           <option value="vegan">Vegan (100% Plant-Based)</option>
                         </select>
                       </div>
-                      <p className="text-xs text-[#4a6a4a]">
+                      <p className="text-xs text-[#3d5a3d]">
                         Meat consumption carries significantly higher CO2 factors.
                       </p>
                     </div>
@@ -387,7 +404,7 @@ export default function OnboardingPage() {
                       <div className="space-y-2">
                         <Label htmlFor="flights">Round-trip flights / year</Label>
                         <div className="relative">
-                          <Plane className="absolute left-3 top-3 h-4 w-4 text-[#4a6a4a]" />
+                          <Plane className="absolute left-3 top-3 h-4 w-4 text-[#3d5a3d]" />
                           <Input
                             id="flights"
                             type="number"

@@ -1,3 +1,14 @@
+/**
+ * GET /api/auth/callback
+ *
+ * OAuth / email-confirmation callback. Exchanges the `code` query param for a
+ * Supabase session, then routes the user onward: to `/onboarding` if they have
+ * not completed the baseline quiz, otherwise to `/dashboard`. Any failure (no
+ * code, exchange error) redirects to `/login` with an error flag. A forwarded
+ * host header is honored so the redirect resolves correctly behind a proxy in
+ * production.
+ */
+
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
@@ -10,12 +21,14 @@ export async function GET(request: Request) {
     const { error, data } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      // Check if user already has baseline quiz completed
+      // Check if the user already completed the baseline quiz. A brand-new
+      // OAuth user may not have a profile row yet, so use maybeSingle() to treat
+      // "no row" as a normal (not-yet-onboarded) state rather than an error.
       const { data: profile } = await supabase
         .from('profiles')
         .select('baseline_completed')
         .eq('id', data.user.id)
-        .single();
+        .maybeSingle();
 
       // If user has already completed the baseline, go straight to dashboard
       const redirectTo = profile?.baseline_completed ? '/dashboard' : '/onboarding';

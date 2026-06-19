@@ -1,12 +1,40 @@
 'use server';
 
+/**
+ * Onboarding server action.
+ *
+ * Validates the baseline-quiz answers, computes the user's monthly carbon
+ * baseline, persists their profile (with the 100-point onboarding bonus), logs
+ * the baseline emission record and karma-ledger entry, then redirects to the
+ * dashboard. Karma totals are owned by the application layer (no DB trigger).
+ */
+
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { baselineQuizSchema, type BaselineQuizInput } from '@/lib/validators/schemas';
 import { calculateBaseline } from '@/lib/carbon/calculator';
 import { logger } from '@/lib/logger';
 import { redirect } from 'next/navigation';
 
-export async function completeOnboarding(formData: BaselineQuizInput, city: string, state: string) {
+/**
+ * Result of an onboarding attempt. On success the action performs a server-side
+ * redirect (which throws to unwind), so callers only ever observe the failure
+ * branch as a returned value. Mirrors `AuthActionResult` / `LogEcoActionResult`.
+ */
+export type CompleteOnboardingResult = { success: true } | { success: false; error: string };
+
+/**
+ * Complete the baseline quiz for the signed-in user and redirect to the dashboard.
+ *
+ * @param formData - Validated baseline quiz answers.
+ * @param city - User's city (localizes community metrics; stored as null if blank).
+ * @param state - User's state (stored as null if blank).
+ * @returns A {@link CompleteOnboardingResult} on failure; redirects on success.
+ */
+export async function completeOnboarding(
+  formData: BaselineQuizInput,
+  city: string,
+  state: string
+): Promise<CompleteOnboardingResult> {
   const supabase = await createServerSupabaseClient();
 
   // Get current user session
@@ -15,13 +43,16 @@ export async function completeOnboarding(formData: BaselineQuizInput, city: stri
     error: authError,
   } = await supabase.auth.getUser();
   if (authError || !user) {
-    return { error: 'You must be signed in to complete onboarding.' };
+    return { success: false, error: 'You must be signed in to complete onboarding.' };
   }
 
   // Validate quiz inputs using Zod
   const validation = baselineQuizSchema.safeParse(formData);
   if (!validation.success) {
-    return { error: validation.error.issues[0]?.message || 'Invalid quiz answers.' };
+    return {
+      success: false,
+      error: validation.error.issues[0]?.message || 'Invalid quiz answers.',
+    };
   }
 
   const quizAnswers = validation.data;
@@ -48,7 +79,7 @@ export async function completeOnboarding(formData: BaselineQuizInput, city: stri
   });
 
   if (profileError) {
-    return { error: `Failed to save profile: ${profileError.message}` };
+    return { success: false, error: `Failed to save profile: ${profileError.message}` };
   }
 
   // 2. Log the initial baseline carbon record

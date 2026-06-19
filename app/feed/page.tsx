@@ -1,3 +1,8 @@
+/**
+ * Karma Ripple Feed — server-renders the most recent anonymized community
+ * eco-actions so users can see their collective impact (the social "Reduce" loop).
+ */
+
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Users, Sprout, Heart, MessageSquare } from 'lucide-react';
@@ -120,7 +125,7 @@ export default async function FeedPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold font-heading text-emerald-950">Karma Ripple Feed</h1>
-            <p className="text-[#4a6a4a] mt-1">
+            <p className="text-[#3d5a3d] mt-1">
               Real-time collective climate actions spreading positive environmental waves across
               India.
             </p>

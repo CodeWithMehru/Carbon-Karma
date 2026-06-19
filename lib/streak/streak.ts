@@ -6,6 +6,9 @@
  * date-sensitive) rules are deterministic and fully unit-testable.
  */
 
+/** Milliseconds in one calendar day (used to derive a UTC day index). */
+const MS_PER_DAY = 86_400_000;
+
 export interface StreakState {
   currentStreak: number;
   longestStreak: number;
@@ -23,7 +26,7 @@ export interface UpdateStreakInput {
 /** Convert any date input to a UTC day index (days since epoch), ignoring time. */
 function toDayIndex(value: Date | string): number {
   const d = value instanceof Date ? value : new Date(value);
-  return Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) / 86_400_000);
+  return Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) / MS_PER_DAY);
 }
 
 /**

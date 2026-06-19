@@ -1,8 +1,17 @@
 'use client';
 
+/**
+ * Signup page — create an account with email/password or Google OAuth.
+ *
+ * Validation lives in the `signUp` server action (Zod: 8+ chars, one uppercase,
+ * one number); on success it shows an email-verification notice rather than
+ * navigating. Field errors are wired to the inputs via `aria-describedby`/
+ * `aria-invalid`, and the card animation respects `prefers-reduced-motion`.
+ */
+
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Leaf, Mail, Lock, User, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +20,7 @@ import { signUp, signInWithGoogle } from '@/app/auth/actions';
 import { toast } from '@/stores/toast-store';
 
 export default function SignupPage() {
+  const reduceMotion = useReducedMotion();
   const [isPending, startTransition] = useTransition();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -24,7 +34,7 @@ export default function SignupPage() {
     setSuccessMsg(null);
     startTransition(async () => {
       const result = await signUp({ email, password, fullName });
-      if (result?.error) {
+      if (!result.success) {
         setErrorMsg(result.error);
         toast({ title: 'Sign Up Failed', description: result.error, type: 'error' });
       } else {
@@ -45,7 +55,7 @@ export default function SignupPage() {
     setErrorMsg(null);
     startTransition(async () => {
       const result = await signInWithGoogle();
-      if (result?.error) {
+      if (!result.success) {
         setErrorMsg(result.error);
         toast({ title: 'Google Sign In Failed', description: result.error, type: 'error' });
       }
@@ -62,9 +72,9 @@ export default function SignupPage() {
       <div className="absolute bottom-[-15%] right-[-10%] w-[40%] h-[40%] bg-amber-200 rounded-full blur-3xl opacity-25 pointer-events-none" />
 
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={reduceMotion ? false : { opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
+        transition={{ duration: reduceMotion ? 0 : 0.45, ease: 'easeOut' }}
         className="w-full max-w-md z-10"
       >
         {/* Brand */}
@@ -148,6 +158,9 @@ export default function SignupPage() {
                     type="text"
                     autoComplete="name"
                     required
+                    aria-required="true"
+                    aria-invalid={errorMsg ? true : undefined}
+                    aria-describedby={errorMsg ? 'signup-error' : undefined}
                     placeholder="Arjun Sharma"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -171,6 +184,9 @@ export default function SignupPage() {
                     type="email"
                     autoComplete="email"
                     required
+                    aria-required="true"
+                    aria-invalid={errorMsg ? true : undefined}
+                    aria-describedby={errorMsg ? 'signup-error' : undefined}
                     placeholder="arjun@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -194,8 +210,9 @@ export default function SignupPage() {
                     type="password"
                     autoComplete="new-password"
                     required
-                    aria-describedby="password-hint"
-                    aria-invalid={!!errorMsg}
+                    aria-required="true"
+                    aria-describedby={errorMsg ? 'password-hint signup-error' : 'password-hint'}
+                    aria-invalid={errorMsg ? true : undefined}
                     placeholder="Min. 8 chars, 1 uppercase, 1 number"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -203,7 +220,7 @@ export default function SignupPage() {
                     disabled={isPending}
                   />
                 </div>
-                <p id="password-hint" className="text-[11px] text-emerald-700">
+                <p id="password-hint" className="text-xs text-emerald-700">
                   Must be at least 8 characters with one uppercase letter and one number.
                 </p>
               </div>

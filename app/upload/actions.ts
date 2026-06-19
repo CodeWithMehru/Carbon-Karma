@@ -1,7 +1,18 @@
 'use server';
 
+/**
+ * Receipt server action.
+ *
+ * Persists a confirmed, AI-parsed receipt and applies all downstream effects in
+ * one place: logging each item as an emission, awarding karma (via the pure
+ * {@link scoreReceiptKarma} rules), advancing the daily streak, recording the
+ * karma-ledger entry, and emitting an anonymized community ripple event. Karma
+ * totals are owned by the application layer (no DB trigger), so the profile is
+ * updated explicitly here.
+ */
+
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { ParseReceiptResult } from '@/lib/ai/ai';
+import type { ParseReceiptResult } from '@/lib/ai/ai';
 import { getKarmaLevel } from '@/lib/carbon/calculator';
 import { scoreReceiptKarma } from '@/lib/karma/scoring';
 import { updateStreak } from '@/lib/streak/streak';
@@ -26,6 +37,12 @@ function toCarbonCategory(category: string): CarbonCategory {
  * Persist a confirmed AI-parsed receipt: log each item as an emission, award
  * karma for the upload and sustainable choices, advance the user's streak, and
  * surface a ripple event when greener picks were made.
+ *
+ * Return contract (the upload client branches on `result.error`):
+ * - Success → `{ success: true, karmaEarned, totalFootprint }`.
+ * - Processing failure (caught) → `{ success: false, error }`.
+ * - Unauthenticated early-return → `{ error }` (kept as a bare error object for
+ *   parity with the client's `result.error` check and the integration test).
  */
 export async function confirmAndLogReceipt(receiptData: ParseReceiptResult) {
   const supabase = await createServerSupabaseClient();
@@ -33,6 +50,7 @@ export async function confirmAndLogReceipt(receiptData: ParseReceiptResult) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Bare { error } early-return — the upload client checks `result.error`.
   if (!user) {
     return { error: 'You must be logged in.' };
   }

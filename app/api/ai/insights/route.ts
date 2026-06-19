@@ -23,6 +23,16 @@ import { insightsResultSchema } from '@/lib/validators/schemas';
 import type { BaselineAnswers } from '@/lib/carbon/types';
 import { logger } from '@/lib/logger';
 
+/**
+ * Ask Gemini for three personalized insights targeting the user's biggest
+ * emission sources.
+ *
+ * @param answers - The user's baseline lifestyle answers.
+ * @param breakdown - Estimated monthly kg CO₂ per category.
+ * @returns Exactly three validated insights, or `null` when the key is missing
+ *   or the model's output fails schema validation — signalling the caller to use
+ *   the deterministic {@link buildInsights} fallback instead.
+ */
 async function generateWithGemini(
   answers: BaselineAnswers,
   breakdown: Record<string, number>

@@ -80,4 +80,36 @@ describe('scoreReceiptKarma', () => {
     ]);
     expect(result.estimatedKgSaved).toBe(4.5); // 3 * 1.5
   });
+
+  it('scales karma and savings for a large sustainable basket', () => {
+    const result = scoreReceiptKarma(Array.from({ length: 7 }, () => item('sustainable', 0.1)));
+    expect(result.sustainableCount).toBe(7);
+    expect(result.totalKarma).toBe(BASE_UPLOAD_KARMA + 7 * SUSTAINABLE_ITEM_KARMA); // 120
+    expect(result.estimatedKgSaved).toBeCloseTo(10.5, 4); // 7 * 1.5
+  });
+
+  it('handles ten sustainable items cleanly', () => {
+    const result = scoreReceiptKarma(Array.from({ length: 10 }, () => item('sustainable', 0.2)));
+    expect(result.totalKarma).toBe(150); // 50 + 10*10
+    expect(result.estimatedKgSaved).toBe(15); // 10 * 1.5
+  });
+
+  it('rounds the summed footprint to four decimals', () => {
+    const result = scoreReceiptKarma([item('neutral', 0.123456789)]);
+    expect(result.totalEstimatedKgCO2).toBeCloseTo(0.1235, 4);
+  });
+
+  it('awards only base karma for an all-high-carbon basket', () => {
+    const result = scoreReceiptKarma([
+      item('high_carbon', 6),
+      item('high_carbon', 5),
+      item('high_carbon', 7),
+    ]);
+    expect(result.highCarbonCount).toBe(3);
+    expect(result.sustainableCount).toBe(0);
+    expect(result.neutralCount).toBe(0);
+    expect(result.itemKarma).toBe(0);
+    expect(result.totalKarma).toBe(BASE_UPLOAD_KARMA);
+    expect(result.estimatedKgSaved).toBe(0);
+  });
 });

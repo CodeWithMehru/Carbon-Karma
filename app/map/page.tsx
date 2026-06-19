@@ -1,3 +1,8 @@
+/**
+ * Local Impact Map — server-renders a city-level leaderboard (users, total karma,
+ * and kg CO₂ saved per city) to localize and gamify community progress.
+ */
+
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Map as MapIcon, Trophy, Sprout } from 'lucide-react';
@@ -110,7 +115,7 @@ export default async function MapPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold font-heading text-emerald-950">Local Impact Map</h1>
-            <p className="text-[#4a6a4a] mt-1">
+            <p className="text-[#3d5a3d] mt-1">
               Tracking community metrics and localized carbon offsets across regions in India.
             </p>
           </div>
@@ -128,7 +133,7 @@ export default async function MapPage() {
                   minimumFractionDigits: 1,
                   maximumFractionDigits: 1,
                 })}
-                <span className="text-sm font-normal text-[#4a6a4a]">kg CO₂</span>
+                <span className="text-sm font-normal text-[#3d5a3d]">kg CO₂</span>
               </CardTitle>
             </CardHeader>
           </Card>
@@ -140,7 +145,7 @@ export default async function MapPage() {
               </CardDescription>
               <CardTitle className="text-3xl font-bold text-emerald-950 flex items-baseline gap-1.5">
                 {totalUsers.toLocaleString()}
-                <span className="text-sm font-normal text-[#4a6a4a]">users</span>
+                <span className="text-sm font-normal text-[#3d5a3d]">users</span>
               </CardTitle>
             </CardHeader>
           </Card>
@@ -152,7 +157,7 @@ export default async function MapPage() {
               </CardDescription>
               <CardTitle className="text-3xl font-bold text-emerald-950 flex items-baseline gap-1.5">
                 {new Set(mergedCities.map((c) => c.state.toLowerCase())).size}
-                <span className="text-sm font-normal text-[#4a6a4a]">states</span>
+                <span className="text-sm font-normal text-[#3d5a3d]">states</span>
               </CardTitle>
             </CardHeader>
           </Card>
@@ -254,7 +259,7 @@ export default async function MapPage() {
                       </span>
                       <div>
                         <p className="text-sm font-semibold text-emerald-950">{city.city}</p>
-                        <p className="text-xs text-[#4a6a4a]">{city.state}</p>
+                        <p className="text-xs text-[#3d5a3d]">{city.state}</p>
                       </div>
                     </div>
 

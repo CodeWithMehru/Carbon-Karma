@@ -1,3 +1,5 @@
+/** shadcn/ui Card primitives — Card plus Header/Title/Description/Content/Footer. */
+
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +39,7 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn('text-sm text-[#4a6a4a]', className)} {...props} />
+  <p ref={ref} className={cn('text-sm text-[#3d5a3d]', className)} {...props} />
 ));
 CardDescription.displayName = 'CardDescription';
 

@@ -1,3 +1,5 @@
+/** shadcn/ui Button primitive — CVA variants/sizes, `asChild` via Radix Slot. */
+
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -9,7 +11,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] shadow-md transition-all font-semibold',
+          // emerald-700 keeps white text above the WCAG AA contrast threshold
+          // (~5.9:1) where emerald-600 fell short for normal-weight button text.
+          'bg-emerald-700 text-white hover:bg-emerald-800 active:scale-[0.98] shadow-md transition-all font-semibold',
         destructive: 'bg-red-600 text-white hover:bg-red-700 active:scale-[0.98] shadow-sm',
         outline:
           'border-2 border-emerald-200 bg-white hover:bg-emerald-50 text-emerald-900 active:scale-[0.98] transition-all font-semibold',

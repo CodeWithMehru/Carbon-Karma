@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Dashboard navigation bar — brand link plus route-aware nav items (highlighting
+ * the active path via `usePathname`) and the sign-out form action.
+ */
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Leaf, LayoutDashboard, Target, Users, Map } from 'lucide-react';
@@ -39,7 +44,7 @@ export function DashboardNavbar() {
                   href={item.href}
                   className={cn(
                     'flex items-center gap-2 text-sm font-medium transition-colors hover:text-emerald-950',
-                    isActive ? 'text-emerald-900' : 'text-[#4a6a4a]'
+                    isActive ? 'text-emerald-900' : 'text-[#3d5a3d]'
                   )}
                 >
                   <Icon
@@ -58,7 +63,7 @@ export function DashboardNavbar() {
               type="submit"
               variant="ghost"
               size="sm"
-              className="text-[#4a6a4a] hover:text-red-600"
+              className="text-[#3d5a3d] hover:text-red-600"
             >
               Sign Out
             </Button>
@@ -77,7 +82,7 @@ export function DashboardNavbar() {
               href={item.href}
               className={cn(
                 'flex flex-col items-center gap-1 min-w-[64px] text-xs font-medium transition-colors',
-                isActive ? 'text-emerald-900' : 'text-[#4a6a4a]'
+                isActive ? 'text-emerald-900' : 'text-[#3d5a3d]'
               )}
             >
               <Icon

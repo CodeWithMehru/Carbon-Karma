@@ -185,3 +185,81 @@ describe('buildInsights — per-category tailoring', () => {
     expect(titleFor(answers, { transport: 100 }, 'transport')).toBe('Combine Your Trips');
   });
 });
+
+describe('buildInsights — branch coverage', () => {
+  const fuelHeavy = {
+    cooking_fuel: 100,
+    flights: 90,
+    shopping: 80,
+    transport: 1,
+    food: 1,
+    electricity: 1,
+  };
+  const titleFor = (
+    answers: BaselineAnswers,
+    breakdownArg: Record<string, number>,
+    category: string
+  ) => buildInsights(answers, breakdownArg).find((i) => i.category === category)?.title;
+
+  it('treats every car-style mode as a commute-day swap candidate', () => {
+    for (const mode of ['petrol_car', 'diesel_car', 'cng_auto'] as const) {
+      expect(
+        titleFor({ ...baseAnswers, primaryTransport: mode }, { transport: 100 }, 'transport')
+      ).toBe('Switch 2 Commute Days');
+    }
+  });
+
+  it('gives the efficiency tip for already-clean cooking fuels (png, mixed)', () => {
+    for (const fuel of ['png', 'induction', 'mixed'] as const) {
+      expect(titleFor({ ...baseAnswers, cookingFuel: fuel }, fuelHeavy, 'cooking_fuel')).toBe(
+        'Match Pan to Burner'
+      );
+    }
+  });
+
+  it('treats the electricity bill threshold as inclusive (>= 2000)', () => {
+    expect(
+      titleFor(
+        { ...baseAnswers, electricityBillMonthly: 2000 },
+        { electricity: 100 },
+        'electricity'
+      )
+    ).toBe('Cool Smarter at 26°C');
+    expect(
+      titleFor(
+        { ...baseAnswers, electricityBillMonthly: 1999 },
+        { electricity: 100 },
+        'electricity'
+      )
+    ).toBe('Unplug Standby Devices');
+  });
+
+  it('switches flight messaging strictly above four flights a year', () => {
+    expect(titleFor({ ...baseAnswers, flightsPerYear: 4 }, fuelHeavy, 'flights')).toBe(
+      'Rail Over Short Flights'
+    );
+    expect(titleFor({ ...baseAnswers, flightsPerYear: 5 }, fuelHeavy, 'flights')).toBe(
+      'Rethink Frequent Flights'
+    );
+  });
+
+  it('still returns three distinct insights for an all-tiny breakdown', () => {
+    const tiny = {
+      transport: 0.001,
+      food: 0.0005,
+      electricity: 0.0002,
+      cooking_fuel: 0.0001,
+      shopping: 0.00005,
+      flights: 0.00001,
+    };
+    const insights = buildInsights(baseAnswers, tiny);
+    expect(insights).toHaveLength(3);
+    expect(new Set(insights.map((i) => i.category)).size).toBe(3);
+  });
+});
+
+describe('parseBaselineAnswers — partial data', () => {
+  it('returns null when required fields are missing', () => {
+    expect(parseBaselineAnswers({ householdSize: 4, electricityBillMonthly: 2000 })).toBeNull();
+  });
+});

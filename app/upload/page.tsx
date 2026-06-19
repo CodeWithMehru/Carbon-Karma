@@ -1,8 +1,18 @@
 'use client';
 
+/**
+ * Receipt upload (the "Track" step) — a two-stage client flow.
+ *
+ * Stage 1: pick/drop a receipt image and POST it to `/api/ai/parse-receipt`,
+ * where Gemini Vision extracts the line items. Stage 2: review the parsed items
+ * and confirm, which calls the `confirmAndLogReceipt` server action to persist
+ * the emissions and award karma. Loading/parse/confirm states are announced via
+ * an `aria-live` region; entrance animations honor `prefers-reduced-motion`.
+ */
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Leaf, ArrowLeft, Camera, Sparkles, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
@@ -17,11 +27,12 @@ import {
 } from '@/components/ui/card';
 import { DragDropZone } from '@/components/upload/drag-drop-zone';
 import { toast } from '@/stores/toast-store';
-import { ParseReceiptResult } from '@/lib/ai/ai';
+import type { ParseReceiptResult } from '@/lib/ai/ai';
 import { confirmAndLogReceipt } from './actions';
 
 export default function UploadPage() {
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
 
   const [file, setFile] = useState<File | null>(null);
   const [isParsing, setIsParsing] = useState(false);
@@ -130,10 +141,10 @@ export default function UploadPage() {
           {!parsedData ? (
             <motion.div
               key="upload"
-              initial={{ opacity: 0, y: 20 }}
+              initial={reduceMotion ? false : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -20 }}
+              transition={{ duration: reduceMotion ? 0 : 0.3 }}
             >
               <Card className="glass border-border/50 shadow-xl backdrop-blur-md">
                 <CardHeader>
@@ -173,9 +184,9 @@ export default function UploadPage() {
           ) : (
             <motion.div
               key="preview"
-              initial={{ opacity: 0, x: 20 }}
+              initial={reduceMotion ? false : { opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: reduceMotion ? 0 : 0.3 }}
               className="space-y-6"
             >
               <Card className="glass border-border/50 shadow-xl backdrop-blur-md overflow-hidden">
@@ -193,7 +204,7 @@ export default function UploadPage() {
                     </div>
 
                     <div className="flex flex-col items-end">
-                      <div className="text-sm font-medium text-[#4a6a4a] mb-1">
+                      <div className="text-sm font-medium text-[#3d5a3d] mb-1">
                         Sustainability Score
                       </div>
                       <div className="flex items-center gap-2">
@@ -219,7 +230,7 @@ export default function UploadPage() {
 
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                      <thead className="text-xs text-[#4a6a4a] uppercase bg-white/50 border-b border-border">
+                      <thead className="text-xs text-[#3d5a3d] uppercase bg-white/50 border-b border-border">
                         <tr>
                           <th className="px-4 py-3 rounded-tl-lg">Item</th>
                           <th className="px-4 py-3">Category</th>
@@ -235,7 +246,7 @@ export default function UploadPage() {
                           >
                             <td className="px-4 py-3 font-medium text-emerald-950">
                               {item.name}
-                              <div className="text-xs text-[#4a6a4a] font-normal">
+                              <div className="text-xs text-[#3d5a3d] font-normal">
                                 {item.quantity} {item.unit} • ₹{item.price_inr}
                               </div>
                             </td>

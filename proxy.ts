@@ -6,6 +6,7 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { logger } from '@/lib/logger';
 
 /** Routes that require authentication */
 const PROTECTED_ROUTES = [
@@ -25,21 +26,49 @@ const AUTH_ROUTES = ['/login', '/signup'];
 const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 
-/** In-memory rate limit store (use Redis in production) */
+/**
+ * In-memory rate-limit store. Suitable for a single instance / demo; a
+ * horizontally-scaled deployment should back this with a shared store (e.g.
+ * Redis) so limits hold across instances.
+ */
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+/** Timestamp of the last sweep, so cleanup runs at most once per window. */
+let lastCleanupAt = 0;
+
+/** Evict expired entries so the store cannot grow unbounded over time. */
+function cleanupRateLimitStore(now: number): void {
+  // Throttle the sweep to once per window — otherwise we'd pay an O(n) scan on
+  // every AI request just to reclaim a handful of stale buckets.
+  if (now - lastCleanupAt < RATE_LIMIT_WINDOW_MS) return;
+  lastCleanupAt = now;
+  for (const [key, entry] of rateLimitStore) {
+    if (now >= entry.resetAt) rateLimitStore.delete(key);
+  }
+}
 
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Rate limiting for AI routes ──────────────────────────────────────────
   if (pathname.startsWith('/api/ai/')) {
+    // `x-forwarded-for` is only trustworthy behind a trusted proxy (Cloud Run /
+    // the platform load balancer sets it); we take the left-most (client) hop.
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
     const now = Date.now();
+    cleanupRateLimitStore(now);
     const entry = rateLimitStore.get(ip);
 
+    // Fixed-window counter per IP. If a window is still open, enforce the cap
+    // (reply 429 with Retry-After once it's reached) and otherwise count the
+    // request; if there's no entry or the window has expired, open a fresh one.
     if (entry && now < entry.resetAt) {
       if (entry.count >= RATE_LIMIT_MAX) {
+        // Tell the client exactly how many seconds until the window resets.
         const retryAfter = Math.max(1, Math.ceil((entry.resetAt - now) / 1000));
+        // Record the throttle event for abuse monitoring (no PII beyond the IP,
+        // and the logger is silenced under test).
+        logger.warn(`Rate limit hit for ${pathname}`, { ip, retryAfter });
         return NextResponse.json(
           { error: 'Rate limit exceeded. Please try again later.' },
           {
@@ -54,6 +83,7 @@ export default async function proxy(request: NextRequest) {
       }
       entry.count++;
     } else {
+      // First request from this IP, or the previous window has elapsed.
       rateLimitStore.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
     }
   }
@@ -96,9 +126,10 @@ export default async function proxy(request: NextRequest) {
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
 
   if (isProtected && !user) {
-    const redirectUrl = new URL('/login', request.url);
-    redirectUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(redirectUrl);
+    // Redirect to login without echoing the requested path as a query param.
+    // The login flow always returns the user to the dashboard, so there is no
+    // post-auth redirect to honor — and therefore no open-redirect surface.
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   if (isAuthRoute && user) {

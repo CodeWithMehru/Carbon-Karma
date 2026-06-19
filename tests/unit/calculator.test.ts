@@ -135,6 +135,26 @@ describe('calculateCookingFuel', () => {
     const result = calculateCookingFuel('lpg_cylinder', 0.5);
     expect(result.kgCO2).toBe(22.0);
   });
+
+  it('should calculate PNG (piped gas) emissions per m³', () => {
+    const result = calculateCookingFuel('png_per_m3', 10);
+    expect(result.kgCO2).toBeCloseTo(20.0, 4); // 10 m³ × 2.0
+    expect(result.category).toBe('cooking_fuel');
+  });
+
+  it('should calculate firewood emissions per kg', () => {
+    const result = calculateCookingFuel('firewood_per_kg', 5);
+    expect(result.kgCO2).toBeCloseTo(8.5, 4); // 5 kg × 1.7
+  });
+
+  it('should price induction cooking off the grid factor', () => {
+    const result = calculateCookingFuel('induction_per_kwh', 100);
+    expect(result.kgCO2).toBeCloseTo(82.0, 4); // 100 kWh × 0.82 grid factor
+  });
+
+  it('should return zero emissions for zero quantity', () => {
+    expect(calculateCookingFuel('firewood_per_kg', 0).kgCO2).toBe(0);
+  });
 });
 
 // ─── Baseline Calculator ─────────────────────────────────────────────────────
@@ -418,5 +438,59 @@ describe('getKarmaLevel – extended edge cases', () => {
   it('should handle very large point totals', () => {
     const level = getKarmaLevel(1000000);
     expect(level).toBe(10001);
+  });
+});
+
+// ─── calculateBaseline & buildCarbonSummary – further edge cases ──────────────
+
+describe('calculateBaseline – boundary & diet edge cases', () => {
+  const baseline: BaselineAnswers = {
+    householdSize: 4,
+    electricityBillMonthly: 2000,
+    cookingFuel: 'lpg',
+    primaryTransport: 'two_wheeler',
+    dailyCommuteKm: 10,
+    dietType: 'mixed',
+    mealsPerDay: 3,
+    flightsPerYear: 2,
+    avgFlightHours: 2,
+    shoppingFrequency: 'moderate',
+  };
+
+  it('stays finite and positive at the schema maximums', () => {
+    const result = calculateBaseline({
+      ...baseline,
+      householdSize: 20,
+      electricityBillMonthly: 100000,
+      primaryTransport: 'petrol_car',
+      dailyCommuteKm: 500,
+      mealsPerDay: 10,
+      flightsPerYear: 100,
+      avgFlightHours: 24,
+      shoppingFrequency: 'frequent',
+    });
+    expect(Number.isFinite(result.kgCO2)).toBe(true);
+    expect(result.kgCO2).toBeGreaterThan(0);
+  });
+
+  it("averages the veg and non-veg factor for a 'mixed' diet", () => {
+    // 3 meals/day × ((0.7 + 3.3) / 2) × 30 days = 180 kg/mo
+    const result = calculateBaseline(baseline);
+    expect(result.breakdown?.food).toBeCloseTo(180, 2);
+  });
+});
+
+describe('buildCarbonSummary – mixed savings and emissions', () => {
+  it('nets savings against emissions while accumulating the category total', () => {
+    const summary = buildCarbonSummary([
+      { kg_co2: 10, is_saving: false, category: 'transport' },
+      { kg_co2: 4, is_saving: true, category: 'transport' },
+    ]);
+    expect(summary.totalEmittedKg).toBeCloseTo(10, 2);
+    expect(summary.totalSavedKg).toBeCloseTo(4, 2);
+    expect(summary.netKg).toBeCloseTo(6, 2);
+    // The category breakdown accumulates every log's kg_co2, saving or not.
+    expect(summary.categoryBreakdown.transport).toBeCloseTo(14, 2);
+    expect(summary.treeEquivalent).toBeCloseTo(0.5, 2); // 10 / 22 tree-kg
   });
 });

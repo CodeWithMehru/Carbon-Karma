@@ -1,5 +1,14 @@
 'use client';
 
+/**
+ * Drag-and-drop image picker for receipt uploads.
+ *
+ * Wraps `react-dropzone` to accept a single image (click or drag), shows a
+ * thumbnail preview via an object URL, and lifts the chosen file to the parent
+ * through `onFileSelected`. The picker is keyboard-accessible (dropzone input)
+ * and can be disabled while a parse is in flight.
+ */
+
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,7 +18,9 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 interface DragDropZoneProps {
+  /** Invoked with the selected image file once the user picks/drops one. */
   onFileSelected: (file: File) => void;
+  /** Disables the picker (e.g. while the previous image is being parsed). */
   disabled?: boolean;
 }
 
@@ -74,7 +85,7 @@ export function DragDropZone({ onFileSelected, disabled }: DragDropZoneProps) {
                 <UploadCloud
                   className={cn(
                     'h-8 w-8 transition-colors',
-                    isDragActive ? 'text-emerald-600' : 'text-[#4a6a4a]'
+                    isDragActive ? 'text-emerald-600' : 'text-[#3d5a3d]'
                   )}
                 />
               </div>
@@ -82,7 +93,7 @@ export function DragDropZone({ onFileSelected, disabled }: DragDropZoneProps) {
               <h3 className="text-lg font-semibold text-emerald-950 mb-1">
                 {isDragActive ? 'Drop receipt here' : 'Click or drag receipt'}
               </h3>
-              <p className="text-sm text-[#4a6a4a] mb-4 max-w-xs">
+              <p className="text-sm text-[#3d5a3d] mb-4 max-w-xs">
                 Supports JPEG, PNG, and WebP. AI will automatically extract items.
               </p>
 
@@ -118,7 +129,7 @@ export function DragDropZone({ onFileSelected, disabled }: DragDropZoneProps) {
               </div>
             ) : (
               <div className="w-32 h-40 rounded-lg bg-white border border-border flex items-center justify-center flex-shrink-0">
-                <FileImage className="h-8 w-8 text-[#4a6a4a]" />
+                <FileImage className="h-8 w-8 text-[#3d5a3d]" />
               </div>
             )}
 
@@ -129,7 +140,7 @@ export function DragDropZone({ onFileSelected, disabled }: DragDropZoneProps) {
                   {selectedFile.name}
                 </h4>
               </div>
-              <p className="text-xs text-[#4a6a4a] mb-4">
+              <p className="text-xs text-[#3d5a3d] mb-4">
                 {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
               </p>
 
@@ -139,7 +150,7 @@ export function DragDropZone({ onFileSelected, disabled }: DragDropZoneProps) {
                   variant="outline"
                   size="sm"
                   onClick={removeFile}
-                  className="bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-[#4a6a4a]"
+                  className="bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-[#3d5a3d]"
                 >
                   <X className="h-4 w-4 mr-1" /> Remove
                 </Button>

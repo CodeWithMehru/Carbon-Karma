@@ -26,7 +26,16 @@ export const KARMA_LEVELS = [
 ] as const;
 
 /**
- * Get the karma level info for a given point total.
+ * Resolve the full karma-level descriptor for a given point total.
+ *
+ * Walks {@link KARMA_LEVELS} to find the highest level the user has reached,
+ * then computes their progress toward the next tier.
+ *
+ * @param points - The user's lifetime karma points.
+ * @returns The current level (level/title/emoji/color) augmented with:
+ *   `progress` (0–100% toward the next level), `nextLevel` (the next tier, or
+ *   `null` at the maximum level), and `pointsToNext` (points remaining to the
+ *   next tier, or `0` at the maximum level).
  */
 export function getKarmaLevelInfo(points: number) {
   let currentLevel: (typeof KARMA_LEVELS)[number] = KARMA_LEVELS[0];

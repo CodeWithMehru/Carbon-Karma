@@ -11,8 +11,15 @@ import type { Database } from '@/types/database';
  * Automatically handles auth token refresh via cookies.
  */
 export function createClient() {
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  // These are public (`NEXT_PUBLIC_*`) values, but validate them so a missing
+  // build-time configuration fails with a clear message instead of `undefined`.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      'Missing Supabase environment variables: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'
+    );
+  }
+
+  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
 }

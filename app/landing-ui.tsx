@@ -1,11 +1,19 @@
 'use client';
 
+/**
+ * Landing page UI — the marketing hero and feature highlights shown to
+ * unauthenticated visitors. Purely presentational (animated hero + three feature
+ * cards) with a single CTA to sign up; entrance motion respects
+ * `prefers-reduced-motion`.
+ */
+
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Leaf, ArrowRight, Shield, Zap, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function LandingUI() {
+  const reduceMotion = useReducedMotion();
   return (
     <main
       aria-label="Carbon Karma Landing Page"
@@ -37,9 +45,9 @@ export default function LandingUI() {
       {/* Hero Section */}
       <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 text-center pt-16 pb-24">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          transition={{ duration: reduceMotion ? 0 : 0.6, ease: 'easeOut' }}
           className="max-w-4xl mx-auto space-y-8"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100/80 border border-emerald-200 text-emerald-800 text-sm font-medium mb-4 backdrop-blur-sm">
@@ -55,7 +63,7 @@ export default function LandingUI() {
             <br className="hidden md:block" /> Into Real Impact.
           </h1>
 
-          <p className="mt-6 text-lg md:text-xl text-[#4a6a4a] max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-6 text-lg md:text-xl text-[#3d5a3d] max-w-2xl mx-auto leading-relaxed">
             Carbon Karma is a delightfully gamified platform where you track your lifestyle
             footprint, earn Karma points for sustainable actions, and see your positive ripple
             effect across the community.
@@ -76,10 +84,15 @@ export default function LandingUI() {
         </motion.div>
 
         {/* Feature Highlights */}
+        <h2 className="sr-only">Key features</h2>
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
+          transition={{
+            duration: reduceMotion ? 0 : 0.7,
+            delay: reduceMotion ? 0 : 0.3,
+            ease: 'easeOut',
+          }}
           className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto w-full"
         >
           <FeatureCard
@@ -118,7 +131,7 @@ function FeatureCard({
         {icon}
       </div>
       <h3 className="text-xl font-semibold text-emerald-950 mb-2 font-heading">{title}</h3>
-      <p className="text-[#4a6a4a] text-sm leading-relaxed">{description}</p>
+      <p className="text-[#3d5a3d] text-sm leading-relaxed">{description}</p>
     </div>
   );
 }

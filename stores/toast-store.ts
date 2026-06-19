@@ -1,3 +1,11 @@
+/**
+ * Toast notification store (Zustand).
+ *
+ * Holds the active toast queue and exposes `addToast`/`removeToast`; each toast
+ * auto-expires after its `duration` (default 5s). The standalone `toast(...)`
+ * helper lets non-React code (e.g. event handlers) enqueue a notification.
+ */
+
 import { create } from 'zustand';
 
 export type ToastType = 'success' | 'error' | 'info';

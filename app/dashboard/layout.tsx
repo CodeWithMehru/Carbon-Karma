@@ -1,4 +1,6 @@
-import { ReactNode } from 'react';
+/** Layout for the authenticated app — renders the dashboard navbar above each page. */
+
+import type { ReactNode } from 'react';
 import { DashboardNavbar } from '@/components/dashboard/navbar';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {

@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * Dashboard Quick Actions — one-click eco-action logging (the "Reduce" step).
+ *
+ * Renders a short list of eco-actions; tapping one calls the `logEcoAction`
+ * server action inside a transition, shows a per-row pending state, toasts the
+ * karma earned, and refreshes the dashboard so the new streak/footprint appear.
+ */
+
 import { useTransition, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Bike, Train, Users, Footprints, Home, Utensils, Leaf } from 'lucide-react';
@@ -16,6 +24,7 @@ interface EcoAction {
   icon_name: string;
 }
 
+/** Map a DB `icon_name` to its lucide icon; unknown names fall back to Leaf. */
 const getIcon = (name: string) => {
   switch (name) {
     case 'bike':

@@ -7,6 +7,7 @@
 /** India grid emission factor (kgCO2/kWh) — CEA 2023-24 */
 export const ELECTRICITY_FACTOR = 0.82 as const;
 
+/** kgCO2 per km travelled. EV/derived modes scale off the grid factor above. */
 export const TRANSPORT_FACTORS = {
   petrol_car: 0.1925,
   diesel_car: 0.1787,
@@ -22,6 +23,7 @@ export const TRANSPORT_FACTORS = {
   walking: 0,
 } as const;
 
+/** kgCO2 per unit of fuel combusted (per litre or per kg, as named). */
 export const FUEL_FACTORS = {
   petrol_per_liter: 2.31,
   diesel_per_liter: 2.68,
@@ -29,6 +31,7 @@ export const FUEL_FACTORS = {
   lpg_per_kg: 2.98,
 } as const;
 
+/** kgCO2 per meal/serving, by diet/food type. */
 export const FOOD_FACTORS = {
   veg_meal: 0.7,
   non_veg_meal: 3.3,
@@ -37,6 +40,7 @@ export const FOOD_FACTORS = {
   packaged_food: 1.2,
 } as const;
 
+/** kgCO2 per unit consumed (per cylinder / m³ / kg / kWh, as named). */
 export const COOKING_FUEL_FACTORS = {
   lpg_cylinder: 44.0,
   png_per_m3: 2.0,
@@ -44,6 +48,7 @@ export const COOKING_FUEL_FACTORS = {
   induction_per_kwh: ELECTRICITY_FACTOR,
 } as const;
 
+/** kgCO2 per kg of waste; `*_saved_*` keys are emissions AVOIDED, not emitted. */
 export const WASTE_FACTORS = {
   landfill_per_kg: 0.58,
   compost_saved_per_kg: 0.25,
@@ -51,17 +56,20 @@ export const WASTE_FACTORS = {
   plastic_bag: 0.04,
 } as const;
 
+/** kgCO2 per kilolitre of municipal water, or per single use as named. */
 export const WATER_FACTORS = {
   municipal_per_kl: 0.344,
   hot_shower_10min: 1.5,
 } as const;
 
+/** kgCO2 per ₹1000 spent or per device; `secondhand_saving` is avoided emissions. */
 export const SHOPPING_FACTORS = {
   clothing_per_1000_inr: 5.0,
   electronics_per_device: 50.0,
   secondhand_saving: 5.0,
 } as const;
 
+/** Reference values for contextualizing a footprint (units stated per key). */
 export const BENCHMARKS = {
   india_avg_annual_tonnes: 1.9,
   india_avg_monthly_kg: 158.3,
@@ -70,6 +78,7 @@ export const BENCHMARKS = {
   tree_absorption_annual_kg: 22.0,
 } as const;
 
+/** UI presentation metadata (label/icon/color) per category — not emission data. */
 export const CATEGORY_META = {
   electricity: {
     label: 'Electricity',

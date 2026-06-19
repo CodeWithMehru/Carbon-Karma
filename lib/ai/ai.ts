@@ -1,3 +1,15 @@
+/**
+ * AI receipt-parsing layer (Google Gemini 1.5 Flash Vision).
+ *
+ * Wraps the Gemini Vision call that turns a receipt/bill image into structured,
+ * Zod-validated line items with CO₂ estimates. The model output is never
+ * trusted blindly: it is parsed, validated against {@link geminiReceiptSchema},
+ * and only user-safe errors ({@link ReceiptValidationError}) are surfaced.
+ *
+ * When no API key is configured the module falls back to a deterministic mock
+ * parser so the product is fully demoable without credentials.
+ */
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { geminiReceiptSchema } from '@/lib/validators/schemas';
 import { logger } from '@/lib/logger';
@@ -26,11 +38,17 @@ export interface ParseReceiptResult {
   feedback_message: string;
 }
 
-// Instantiate client if API key is present
+/**
+ * Build the Google Generative AI client, or `null` when no usable key is set.
+ *
+ * Returning `null` (rather than throwing) is deliberate: it lets the caller fall
+ * back to the deterministic mock parser so the product is fully demoable without
+ * credentials. The placeholder value from `.env.local.example` counts as "unset".
+ */
 const getGeminiClient = () => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey === 'your_gemini_api_key') {
-    console.warn('GEMINI_API_KEY is not configured. Using randomised fallback parser.');
+    logger.warn('GEMINI_API_KEY is not configured. Using randomised fallback parser.');
     return null;
   }
   return new GoogleGenerativeAI(apiKey);
@@ -198,11 +216,18 @@ const MOCK_FEEDBACKS = [
   'Great job choosing organic and local items — your kitchen is going green!',
 ];
 
+/** Return `count` randomly-chosen items from `arr` (shuffle-then-slice). */
 function shuffleAndPick<T>(arr: T[], count: number): T[] {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
 
+/**
+ * Produce a randomized mock receipt (3–6 items) for demo/fallback use when no
+ * Gemini API key is configured. The shape matches a real parse so every
+ * downstream feature (scoring, logging, the review UI) works unchanged, and the
+ * sustainability score is derived from the share of sustainable items picked.
+ */
 export function getMockReceiptResult(): ParseReceiptResult {
   const store = MOCK_STORES[Math.floor(Math.random() * MOCK_STORES.length)];
   const itemCount = 3 + Math.floor(Math.random() * 4); // 3-6 items
@@ -288,7 +313,12 @@ export async function parseReceiptImage(
     const response = await result.response;
     let jsonText = response.text();
 
-    // Clean up markdown if the model included it despite instructions
+    // LLM output is untrusted free text, so it passes through three guards
+    // before we use it: (1) strip stray markdown fences the model sometimes adds
+    // despite instructions, (2) reject the explicit { error } the model returns
+    // for non-receipts, (3) validate the shape with Zod.
+
+    // (1) Clean up markdown if the model included it despite instructions.
     jsonText = jsonText
       .replace(/^```json\n?/g, '')
       .replace(/\n?```$/g, '')
@@ -296,12 +326,12 @@ export async function parseReceiptImage(
 
     const parsed = JSON.parse(jsonText);
 
-    // The model returns an { error } object when the image is not a receipt.
+    // (2) The model returns an { error } object when the image is not a receipt.
     if (parsed && typeof parsed === 'object' && parsed.error) {
       throw new ReceiptValidationError(String(parsed.error));
     }
 
-    // Strictly validate the structure before trusting the model's output.
+    // (3) Strictly validate the structure before trusting the model's output.
     const validated = geminiReceiptSchema.safeParse(parsed);
     if (!validated.success) {
       throw new ReceiptValidationError(

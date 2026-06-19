@@ -1,3 +1,5 @@
+/** shadcn/ui Input primitive — styled native input with focus-visible ring. */
+
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 

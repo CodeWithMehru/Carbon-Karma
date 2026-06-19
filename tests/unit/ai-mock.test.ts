@@ -89,4 +89,29 @@ describe('getMockReceiptResult', () => {
       expect(item.quantity).toBeGreaterThan(0);
     });
   });
+
+  it('derives the score exactly from the share of sustainable items', () => {
+    // The score must always equal the documented formula, for any random basket.
+    for (let i = 0; i < 100; i++) {
+      const result = getMockReceiptResult();
+      const sustainable = result.items.filter(
+        (item) => item.sustainability_factor === 'sustainable'
+      ).length;
+      const expected = Math.min(100, Math.round((sustainable / result.items.length) * 100));
+      expect(result.overall_sustainability_score).toBe(expected);
+    }
+  });
+
+  it('keeps every item well-formed across many randomized calls', () => {
+    const validFactors = ['high_carbon', 'neutral', 'sustainable'];
+    for (let i = 0; i < 50; i++) {
+      const result = getMockReceiptResult();
+      result.items.forEach((item) => {
+        expect(item.name.length).toBeGreaterThan(0);
+        expect(item.unit.length).toBeGreaterThan(0);
+        expect(validFactors).toContain(item.sustainability_factor);
+        expect(item.estimated_kg_co2).toBeGreaterThanOrEqual(0);
+      });
+    }
+  });
 });

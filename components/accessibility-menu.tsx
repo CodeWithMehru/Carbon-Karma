@@ -10,7 +10,7 @@
  * friendly (role="switch", aria-expanded/controls).
  */
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Accessibility, X } from 'lucide-react';
 
 const STORAGE_KEY = 'ck-a11y-prefs';
@@ -67,11 +67,33 @@ function applyPrefs(prefs: A11yPrefs) {
 export function AccessibilityMenu() {
   const [open, setOpen] = useState(false);
   const prefs = useSyncExternalStore(subscribe, readPrefs, () => DEFAULT_PREFS);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   // Reflect the current preferences onto the document root.
   useEffect(() => {
     applyPrefs(prefs);
   }, [prefs]);
+
+  // Close and return focus to the toggle button (keeps keyboard users oriented).
+  const closeMenu = useCallback(() => {
+    setOpen(false);
+    toggleRef.current?.focus();
+  }, []);
+
+  // While the panel is open: move focus into it and allow Escape to dismiss it.
+  useEffect(() => {
+    if (!open) return;
+    closeRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        closeMenu();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [open, closeMenu]);
 
   const update = (patch: Partial<A11yPrefs>) => writePrefs({ ...prefs, ...patch });
 
@@ -87,10 +109,11 @@ export function AccessibilityMenu() {
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-emerald-950">Accessibility</h2>
             <button
+              ref={closeRef}
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={closeMenu}
               aria-label="Close accessibility menu"
-              className="rounded-md p-1 text-gray-500 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-emerald-500"
+              className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-emerald-500"
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -111,6 +134,7 @@ export function AccessibilityMenu() {
       )}
 
       <button
+        ref={toggleRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}

@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * Eco-Action Library (client) — browse and log carbon-saving actions.
+ *
+ * Renders the action catalog with a text search and category filter (computed
+ * client-side from the server-fetched list), and logs a chosen action via the
+ * `logEcoAction` server action with a per-card pending state and toast feedback.
+ */
+
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -160,7 +168,7 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
       {/* Filters & Search Row */}
       <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-3.5 h-4 w-4 text-[#4a6a4a]" />
+          <Search className="absolute left-3 top-3.5 h-4 w-4 text-[#3d5a3d]" />
           <Input
             placeholder="Search eco-actions..."
             value={search}
@@ -192,16 +200,17 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
         <Card className="text-center py-12 border-emerald-100 bg-white">
           <CardContent className="space-y-3">
             <HelpCircle className="h-12 w-12 text-emerald-600/30 mx-auto" />
-            <h3 className="font-heading text-lg font-semibold text-emerald-950">
+            <h2 className="font-heading text-lg font-semibold text-emerald-950">
               No actions found
-            </h3>
-            <p className="text-[#4a6a4a] text-sm max-w-sm mx-auto">
+            </h2>
+            <p className="text-[#3d5a3d] text-sm max-w-sm mx-auto">
               Try adjusting your search query or switching categories.
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="sr-only">Available eco-actions</h2>
           {filteredActions.map((action) => {
             const Icon = getIcon(action.icon_name);
             const isLogging = loggingId === action.id;
@@ -241,7 +250,7 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
                   <CardTitle className="text-lg font-heading text-emerald-950 font-semibold">
                     {action.title}
                   </CardTitle>
-                  <CardDescription className="text-xs text-[#4a6a4a] min-h-[36px] line-clamp-2">
+                  <CardDescription className="text-xs text-[#3d5a3d] min-h-[36px] line-clamp-2">
                     {action.description}
                   </CardDescription>
                 </CardHeader>
@@ -249,13 +258,13 @@ export function ActionsList({ initialActions }: { initialActions: EcoAction[] })
                 <CardContent className="pb-4 pt-0">
                   <div className="grid grid-cols-2 gap-4 border-y border-emerald-100/50 py-3 text-center bg-emerald-50/20 rounded-lg">
                     <div>
-                      <p className="text-xs font-semibold text-[#4a6a4a] uppercase">CO₂ Saved</p>
+                      <p className="text-xs font-semibold text-[#3d5a3d] uppercase">CO₂ Saved</p>
                       <p className="text-sm font-bold text-emerald-800">
                         {action.kg_co2_saved.toFixed(2)} kg
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-[#4a6a4a] uppercase">Karma Points</p>
+                      <p className="text-xs font-semibold text-[#3d5a3d] uppercase">Karma Points</p>
                       <p className="text-sm font-bold text-amber-600 flex items-center justify-center gap-1">
                         <Sparkles className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />+
                         {action.karma_reward}

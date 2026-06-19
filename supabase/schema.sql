@@ -390,6 +390,17 @@ CREATE POLICY "karma_transactions_insert_own"
   ON karma_transactions FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+-- The karma ledger is append-only: explicitly deny UPDATE and DELETE so the
+-- audit trail can never be rewritten or erased. RLS already denies any operation
+-- lacking a permissive policy; these make the immutability intent explicit.
+CREATE POLICY "karma_transactions_no_update"
+  ON karma_transactions FOR UPDATE
+  USING (FALSE);
+
+CREATE POLICY "karma_transactions_no_delete"
+  ON karma_transactions FOR DELETE
+  USING (FALSE);
+
 -- ---- RIPPLE EVENTS ----
 -- All authenticated users can read ripple events (anonymous feed)
 CREATE POLICY "ripple_events_select_all"
@@ -401,6 +412,16 @@ CREATE POLICY "ripple_events_select_all"
 CREATE POLICY "ripple_events_insert_own"
   ON ripple_events FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+
+-- The community feed is immutable once posted: explicitly deny UPDATE and DELETE
+-- so events cannot be tampered with or selectively removed.
+CREATE POLICY "ripple_events_no_update"
+  ON ripple_events FOR UPDATE
+  USING (FALSE);
+
+CREATE POLICY "ripple_events_no_delete"
+  ON ripple_events FOR DELETE
+  USING (FALSE);
 
 -- ---- CHAT MESSAGES ----
 -- Users can only see their own messages

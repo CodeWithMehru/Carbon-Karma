@@ -1,3 +1,8 @@
+/**
+ * Root route (`/`). Sends authenticated users straight to the dashboard and
+ * renders the public landing page for everyone else.
+ */
+
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import LandingUI from './landing-ui';

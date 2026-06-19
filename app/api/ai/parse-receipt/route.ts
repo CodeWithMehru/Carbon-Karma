@@ -1,4 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
+/**
+ * POST /api/ai/parse-receipt
+ *
+ * Accepts a multipart upload of a receipt/bill image, validates it (auth, MIME
+ * type, size), and runs Google Gemini Vision to extract line items and CO₂
+ * estimates. Only user-safe validation messages are surfaced (422); any
+ * internal/SDK failure is logged server-side and returned as a generic 500.
+ *
+ * Rate limited via the global proxy (all `/api/ai/*` routes) and scoped to the
+ * authenticated user only.
+ */
+
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { parseReceiptImage, ReceiptValidationError } from '@/lib/ai/ai';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';

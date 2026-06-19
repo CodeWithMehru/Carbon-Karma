@@ -47,6 +47,17 @@ const nextConfig: NextConfig = {
             value: '1; mode=block',
           },
           {
+            // Isolate this site's browsing context group from cross-origin
+            // openers (mitigates cross-origin tab/popup attacks).
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            // Block legacy Adobe cross-domain policy files entirely.
+            key: 'X-Permitted-Cross-Domain-Policies',
+            value: 'none',
+          },
+          {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",

@@ -1,5 +1,7 @@
 'use client';
 
+/** shadcn/ui Label primitive — Radix label wrapper with peer-disabled styling. */
+
 import * as React from 'react';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, type VariantProps } from 'class-variance-authority';

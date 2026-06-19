@@ -1,10 +1,23 @@
 /**
- * Supabase Database type definitions.
+ * Supabase Database type definitions — the single source of type truth.
  *
- * Mirrors `supabase/schema.sql` and conforms to the `GenericSchema` shape that
- * `@supabase/supabase-js` expects (each table/view carries a `Relationships`
- * tuple and the schema exposes `CompositeTypes`). Keeping this shape exact is
- * what lets every query be fully typed — no `as any` casts required.
+ * Mirrors `supabase/schema.sql` and conforms exactly to the `GenericSchema`
+ * shape that `@supabase/supabase-js` expects: every table/view exposes `Row`,
+ * `Insert`, and `Update` shapes plus a `Relationships` tuple, and the schema
+ * carries `Functions`/`CompositeTypes`. Conforming to this shape is what lets
+ * `createServerClient<Database>` infer fully-typed query results and write
+ * payloads end-to-end.
+ *
+ * Because of this, the codebase contains **zero `as any` / type-assertion
+ * casts** on Supabase calls: `.from(...).select()/.insert()/.update()` are all
+ * type-checked against these definitions. If a column or enum here drifts from
+ * the SQL schema, the compiler surfaces it at the call site rather than failing
+ * silently at runtime.
+ *
+ * This file is hand-maintained (rather than produced by `supabase gen types`) so
+ * the repo stays self-contained and builds without a live database connection or
+ * project credentials — it is the schema's typed contract, kept in lockstep with
+ * `supabase/schema.sql`.
  */
 
 export interface Database {

@@ -1,9 +1,18 @@
 'use client';
 
+/**
+ * Login page — email/password and Google OAuth sign-in.
+ *
+ * Submits credentials through the `signIn` server action (or `signInWithGoogle`)
+ * inside a transition, surfaces failures via an `aria-live` alert wired to the
+ * inputs, and routes to the dashboard on success. The card entrance animation
+ * respects `prefers-reduced-motion`.
+ */
+
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Leaf, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +22,7 @@ import { toast } from '@/stores/toast-store';
 
 export default function LoginPage() {
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const [isPending, startTransition] = useTransition();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,7 +33,7 @@ export default function LoginPage() {
     setErrorMsg(null);
     startTransition(async () => {
       const result = await signIn({ email, password });
-      if (result?.error) {
+      if (!result.success) {
         setErrorMsg(result.error);
         toast({ title: 'Sign In Failed', description: result.error, type: 'error' });
       } else {
@@ -42,7 +52,7 @@ export default function LoginPage() {
     setErrorMsg(null);
     startTransition(async () => {
       const result = await signInWithGoogle();
-      if (result?.error) {
+      if (!result.success) {
         setErrorMsg(result.error);
         toast({ title: 'Google Sign In Failed', description: result.error, type: 'error' });
       }
@@ -59,9 +69,9 @@ export default function LoginPage() {
       <div className="absolute bottom-[-15%] right-[-10%] w-[40%] h-[40%] bg-amber-200 rounded-full blur-3xl opacity-25 pointer-events-none" />
 
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={reduceMotion ? false : { opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
+        transition={{ duration: reduceMotion ? 0 : 0.45, ease: 'easeOut' }}
         className="w-full max-w-md z-10"
       >
         {/* Brand */}
@@ -95,6 +105,7 @@ export default function LoginPage() {
             {errorMsg && (
               <div
                 role="alert"
+                id="login-error"
                 className="flex items-start gap-2.5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800 border border-red-200"
               >
                 <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
@@ -138,6 +149,9 @@ export default function LoginPage() {
                     type="email"
                     autoComplete="email"
                     required
+                    aria-required="true"
+                    aria-invalid={errorMsg ? true : undefined}
+                    aria-describedby={errorMsg ? 'login-error' : undefined}
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -163,6 +177,9 @@ export default function LoginPage() {
                     type="password"
                     autoComplete="current-password"
                     required
+                    aria-required="true"
+                    aria-invalid={errorMsg ? true : undefined}
+                    aria-describedby={errorMsg ? 'login-error' : undefined}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

@@ -1,3 +1,14 @@
+/**
+ * Dashboard (server component) — the "Track & Reduce" home screen.
+ *
+ * Fetches the signed-in user's profile, this month's carbon logs, and the
+ * community ripple feed in one pass, then derives the headline metrics: a
+ * day-of-month pro-rated baseline, the current footprint (baseline + logged
+ * emissions − savings), and the "% below pace" reduction figure. Renders the
+ * stat cards, streak, AI insights, quick actions, and trend chart. Unauthenticated
+ * visitors are redirected to /login; users without a baseline go to /onboarding.
+ */
+
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import {
@@ -92,20 +103,29 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .gte('logged_at', startOfMonth.toISOString());
 
-  // Pro-rate the baseline for the current day of the month so it reads realistically.
+  // Pro-rate the monthly baseline to the fraction of the month elapsed, so the
+  // footprint compares like-for-like against partial-month tracked data. On day
+  // 15 of a 30-day month we expect ~50% of the baseline to have accrued.
   const today = new Date();
   const dayOfMonth = today.getDate();
+  // Day 0 of next month resolves to the last day of this month → its day count.
   const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
   const proRatedBaseline = Math.round(baseline * (dayOfMonth / daysInMonth) * 10) / 10;
 
+  // Extra emissions the user actually logged this month (e.g. scanned receipts).
+  // The `baseline_quiz` row is excluded on purpose: the baseline is already
+  // represented by `proRatedBaseline` below, so counting it here would double it.
   const trackedEmissions = (logs ?? [])
     .filter((l) => l.source !== 'baseline_quiz' && !l.is_saving)
     .reduce((sum, l) => sum + Number(l.kg_co2), 0);
 
+  // CO₂ the user avoided via eco-actions — these reduce the footprint.
   const trackedSavings = (logs ?? [])
     .filter((l) => l.is_saving)
     .reduce((sum, l) => sum + Number(l.kg_co2), 0);
 
+  // Current footprint = the month-to-date baseline, plus what they logged, minus
+  // what they saved. Floored at 0 so a great month never shows a negative figure.
   const currentFootprint = Math.max(
     0,
     Math.round((proRatedBaseline + trackedEmissions - trackedSavings) * 10) / 10

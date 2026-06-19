@@ -165,15 +165,19 @@ export function buildInsights(
   answers: BaselineAnswers,
   breakdown: Record<string, number>
 ): Insight[] {
+  // Rank the categories we have a generator for by their emission weight (desc).
   const ranked = Object.keys(GENERATORS)
     .map((category) => ({ category, value: breakdown[category] ?? 0 }))
     .sort((a, b) => b.value - a.value);
 
+  // Candidate order: real emitters first, then DEFAULT_ORDER as filler so we can
+  // always reach three even when the breakdown is sparse or all-zero.
   const queue = [
     ...ranked.filter((r) => r.value > 0),
     ...DEFAULT_ORDER.map((category) => ({ category, value: breakdown[category] ?? 0 })),
   ];
 
+  // Walk the queue, generating one insight per distinct category until we have 3.
   const insights: Insight[] = [];
   const seen = new Set<string>();
   for (const { category, value } of queue) {

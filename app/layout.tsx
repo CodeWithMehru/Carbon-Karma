@@ -1,7 +1,12 @@
+/**
+ * Root layout — loads fonts, sets global metadata/viewport, mounts the theme and
+ * toast providers plus the floating accessibility menu, and exposes the
+ * skip-to-content link and `#main-content` landmark.
+ */
+
 import type { Metadata, Viewport } from 'next';
 import { Inter, Outfit } from 'next/font/google';
 import './globals.css';
-import { QueryProvider } from '@/components/providers/query-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { ToastProvider } from '@/components/providers/toast-provider';
 import { AccessibilityMenu } from '@/components/accessibility-menu';
@@ -61,15 +66,13 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <QueryProvider>
-          <ThemeProvider>
-            <ToastProvider />
-            <div id="main-content" role="main" className="flex flex-col min-h-screen">
-              {children}
-            </div>
-            <AccessibilityMenu />
-          </ThemeProvider>
-        </QueryProvider>
+        <ThemeProvider>
+          <ToastProvider />
+          <div id="main-content" role="main" className="flex flex-col min-h-screen">
+            {children}
+          </div>
+          <AccessibilityMenu />
+        </ThemeProvider>
       </body>
     </html>
   );
